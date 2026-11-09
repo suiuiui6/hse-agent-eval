@@ -1,0 +1,94 @@
+{
+  "responses": [
+    {
+      "keywords": ["动火", "焊接"],
+      "response": {
+        "answer": "动火作业应办理作业许可，清理可燃物，配置消防器材并安排专人监护。",
+        "sources": [
+          {
+            "snippet": "作业前应办理作业许可，清理可燃物，配置消防器材并安排专人监护。",
+            "source_file": "demo-hot-work.md",
+            "article_no": "A1",
+            "section_title": "作业前措施",
+            "document_id": "demo-hot-work-001",
+            "relevance_score": 0.98
+          }
+        ],
+        "metadata": { "query_id": "fixture-hot-work" }
+      }
+    },
+    {
+      "keywords": ["高处", "登高"],
+      "response": {
+        "answer": "高处作业应设置可靠防护设施，作业人员应正确使用安全带。",
+        "sources": [
+          {
+            "snippet": "高处作业应设置防护栏杆或安全网，作业人员应正确使用安全带。",
+            "source_file": "demo-height-work.md",
+            "article_no": "A1",
+            "section_title": "防坠落措施",
+            "document_id": "demo-height-work-001",
+            "relevance_score": 0.97
+          }
+        ],
+        "metadata": { "query_id": "fixture-working-at-height" }
+      }
+    },
+    {
+      "keywords": ["受限空间", "有限空间"],
+      "response": {
+        "answer": "进入受限空间前应隔离能量、检测气体并保持通风和外部监护。",
+        "sources": [
+          {
+            "snippet": "进入前应完成能量隔离和气体检测，作业期间持续通风，监护人员不得离岗。",
+            "source_file": "demo-confined-space.md",
+            "article_no": "A1",
+            "section_title": "进入前条件",
+            "document_id": "demo-confined-space-001",
+            "relevance_score": 0.99
+          }
+        ],
+        "metadata": { "query_id": "fixture-confined-space" }
+      }
+    },
+    {
+      "keywords": ["吊装", "起重"],
+      "response": {
+        "answer": "吊装作业应确认设备和索具合格，设置警戒区并由持证人员统一指挥。",
+        "sources": [
+          {
+            "snippet": "吊装前应检查起重设备、吊具和索具，划定警戒区域，信号指挥人员应持证上岗。",
+            "source_file": "demo-lifting.md",
+            "article_no": "A1",
+            "section_title": "吊装准备",
+            "document_id": "demo-lifting-001",
+            "relevance_score": 0.96
+          }
+        ],
+        "metadata": { "query_id": "fixture-lifting" }
+      }
+    },
+    {
+      "keywords": ["临时用电", "用电"],
+      "response": {
+        "answer": "临时用电应执行三级配电和两级保护，电气作业由持证人员实施。",
+        "sources": [
+          {
+            "snippet": "临时用电应采用三级配电、两级漏电保护，安装和检修由持证电工完成。",
+            "source_file": "demo-temporary-electricity.md",
+            "article_no": "A1",
+            "section_title": "配电与保护",
+            "document_id": "demo-electricity-001",
+            "relevance_score": 0.95
+          }
+        ],
+        "metadata": { "query_id": "fixture-temporary-electricity" }
+      }
+    }
+  ],
+  "default": {
+    "answer": "未检索到匹配的演示条目。",
+    "sources": [],
+    "metadata": { "query_id": "fixture-no-match" }
+  }
+}

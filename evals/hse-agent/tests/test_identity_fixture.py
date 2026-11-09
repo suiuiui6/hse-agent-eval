@@ -9,6 +9,7 @@ KNOWN_ADMIN123_HASH = "$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrd
 
 
 def test_identity_passwords_match_seed_hash_contract():
+    """验证 identity passwords match seed hash contract 场景。"""
     identities = json.loads(IDENTITIES.read_text(encoding="utf-8"))
     seed = BASE_SEED.read_text(encoding="utf-8")
 

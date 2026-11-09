@@ -27,9 +27,11 @@ CHAT_DATA = {
 
 
 def test_chat_unwraps_ajax_result_data_and_sends_bearer_token():
+    """验证 chat unwraps ajax result data and sends bearer token 场景。"""
     seen_requests = []
 
     def handler(request):
+        """处理 handler 相关逻辑。"""
         seen_requests.append(request)
         return httpx.Response(
             200,
@@ -56,7 +58,9 @@ def test_chat_unwraps_ajax_result_data_and_sends_bearer_token():
 
 
 def test_binding_reads_backend_database_metadata():
+    """验证 binding reads backend database metadata 场景。"""
     def handler(request):
+        """处理 handler 相关逻辑。"""
         assert request.method == "GET"
         assert request.url.path == "/hse/agent/eval/binding"
         assert request.headers["Authorization"] == "Bearer eval-jwt-token"
@@ -86,7 +90,9 @@ def test_binding_reads_backend_database_metadata():
 
 
 def test_login_returns_token_and_supports_injected_httpx_client():
+    """验证 login returns token and supports injected httpx client 场景。"""
     def handler(request):
+        """处理 handler 相关逻辑。"""
         assert request.url.path == "/login"
         assert json.loads(request.content) == {
             "username": "hse_user",
@@ -110,6 +116,7 @@ def test_login_returns_token_and_supports_injected_httpx_client():
 
 @pytest.mark.parametrize("token", [0, False, [], {}])
 def test_login_rejects_non_string_token(token):
+    """验证 login rejects non string token 场景。"""
     transport = httpx.MockTransport(
         lambda request: httpx.Response(
             200,
@@ -132,6 +139,7 @@ def test_login_rejects_non_string_token(token):
     [("", "password"), (" ", "password"), ("user", ""), ("user", " ")],
 )
 def test_login_rejects_blank_credentials_before_request(username, password):
+    """验证 login rejects blank credentials before request 场景。"""
     calls = []
     transport = httpx.MockTransport(lambda request: calls.append(request))
     client = EngineClient(
@@ -157,6 +165,7 @@ def test_login_rejects_blank_credentials_before_request(username, password):
 def test_chat_rejects_blank_security_inputs_before_request(
     token, message, session_id, error_text
 ):
+    """验证 chat rejects blank security inputs before request 场景。"""
     calls = []
     transport = httpx.MockTransport(lambda request: calls.append(request))
     client = EngineClient(
@@ -184,6 +193,7 @@ def test_chat_rejects_blank_security_inputs_before_request(
 def test_login_rejects_http_and_malformed_ajax_results_without_exposing_password(
     response,
 ):
+    """验证 login rejects http and malformed ajax results without exposing password 场景。"""
     password = "bad-password-secret"
     transport = httpx.MockTransport(lambda request: response)
     client = EngineClient(
@@ -211,6 +221,7 @@ def test_login_rejects_http_and_malformed_ajax_results_without_exposing_password
 def test_chat_rejects_http_and_malformed_ajax_results_without_exposing_token(
     response,
 ):
+    """验证 chat rejects http and malformed ajax results without exposing token 场景。"""
     token = "eval-jwt-secret"
     transport = httpx.MockTransport(lambda request: response)
     client = EngineClient(
@@ -226,6 +237,7 @@ def test_chat_rejects_http_and_malformed_ajax_results_without_exposing_token(
 
 
 def test_engine_client_never_echoes_untrusted_ajax_result_messages():
+    """验证 engine client never echoes untrusted ajax result messages 场景。"""
     untrusted_message = "password=remote-password-secret jwt=remote-jwt-secret"
 
     with (
@@ -258,10 +270,12 @@ def test_engine_client_never_echoes_untrusted_ajax_result_messages():
 
 
 def test_transport_failure_is_wrapped_without_exposing_secrets():
+    """验证 transport failure is wrapped without exposing secrets 场景。"""
     password = "transport-password-secret"
     token = "transport-token-secret"
 
     def handler(request):
+        """处理 handler 相关逻辑。"""
         raise httpx.ConnectError("dependency unavailable", request=request)
 
     client = EngineClient(
@@ -280,6 +294,7 @@ def test_transport_failure_is_wrapped_without_exposing_secrets():
 
 
 def test_context_manager_closes_owned_client():
+    """验证 context manager closes owned client 场景。"""
     transport = httpx.MockTransport(
         lambda request: httpx.Response(
             200, json={"code": 200, "msg": "ok", "token": "token"}
@@ -298,10 +313,12 @@ def test_context_manager_closes_owned_client():
 
 
 def test_confirm_preserves_all_server_binding_fields():
+    """验证 confirm preserves all server binding fields 场景。"""
     seen_requests = []
     data = {"status": "success", "tool": "create_task", "data": {"taskId": 12}}
 
     def handler(request):
+        """处理 handler 相关逻辑。"""
         seen_requests.append(request)
         return httpx.Response(
             200,
@@ -335,10 +352,12 @@ def test_confirm_preserves_all_server_binding_fields():
 
 
 def test_cancel_preserves_all_server_binding_fields():
+    """验证 cancel preserves all server binding fields 场景。"""
     seen_requests = []
     data = {"status": "cancelled", "tool": "create_task", "meta": {"toolCallId": "call-1"}}
 
     def handler(request):
+        """处理 handler 相关逻辑。"""
         seen_requests.append(request)
         return httpx.Response(
             200,
@@ -372,10 +391,12 @@ def test_cancel_preserves_all_server_binding_fields():
 
 
 def test_clear_posts_session_binding_and_unwraps_data():
+    """验证 clear posts session binding and unwraps data 场景。"""
     seen_requests = []
     data = {"status": "deleted", "sessionId": "session-001"}
 
     def handler(request):
+        """处理 handler 相关逻辑。"""
         seen_requests.append(request)
         return httpx.Response(
             200,

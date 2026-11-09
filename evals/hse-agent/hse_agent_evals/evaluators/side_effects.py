@@ -17,6 +17,7 @@ from hse_agent_evals.models import EvalCase, RunRecord, SideEffect
 
 @dataclass(frozen=True)
 class SideEffectScore:
+    """处理 SideEffectScore 相关逻辑。"""
     actual: list[dict[str, Any]]
     missing_expected: list[str]
     forbidden_effects: list[str]
@@ -30,6 +31,7 @@ def score_side_effects(
     actual: Iterable[SideEffect],
     side_effect_committed: bool,
 ) -> SideEffectScore:
+    """处理 score side effects 相关逻辑。"""
     actual_list = list(actual)
     evidence = [side_effect_evidence(effect) for effect in actual_list]
     expected_list = list(expected)
@@ -55,6 +57,7 @@ def score_side_effects(
 
 
 def effect_matches_key(effect: SideEffect, expected_key: str) -> bool:
+    """处理 effect matches key 相关逻辑。"""
     if canonical_side_effect_key(effect.key) != canonical_side_effect_key(expected_key):
         return False
     occurred = effect.before_count != effect.after_count or bool(effect.changed_rows)
@@ -69,6 +72,7 @@ def effect_matches_key(effect: SideEffect, expected_key: str) -> bool:
 
 
 def side_effect_evidence(effect: SideEffect) -> dict[str, Any]:
+    """处理 side effect evidence 相关逻辑。"""
     changed_row_fields = sorted(
         {
             field
@@ -89,6 +93,7 @@ def side_effect_evidence(effect: SideEffect) -> dict[str, Any]:
 def side_effect_telemetry_mismatch(
     side_effect_committed: bool, evidence: Iterable[dict[str, Any]]
 ) -> str | None:
+    """处理 side effect telemetry mismatch 相关逻辑。"""
     occurred = any(item["occurred"] for item in evidence)
     if side_effect_committed and not occurred:
         return "committed_without_snapshot"
@@ -98,7 +103,9 @@ def side_effect_telemetry_mismatch(
 
 
 class SideEffectEvaluator(Evaluator[EvalCase, RunRecord]):
+    """处理 SideEffectEvaluator 相关逻辑。"""
     def evaluate(self, evaluation_case: EvaluationData) -> list[EvaluationOutput]:
+        """处理 evaluate 相关逻辑。"""
         inputs = evaluation_inputs(evaluation_case)
         if inputs is None:
             return invalid_evaluation_output("side_effects")
@@ -123,6 +130,7 @@ class SideEffectEvaluator(Evaluator[EvalCase, RunRecord]):
 def side_effect_evaluator_evidence(
     case: EvalCase, run: RunRecord, score: SideEffectScore
 ) -> dict[str, Any]:
+    """处理 side effect evaluator evidence 相关逻辑。"""
     return {
         "actualSideEffects": score.actual,
         "expectedSideEffects": case.expected_side_effects,

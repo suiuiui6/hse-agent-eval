@@ -15,6 +15,7 @@ CASES_DIR = Path(__file__).resolve().parents[1] / "cases"
 
 
 def test_validate_returns_zero_for_approved_dataset(capsys):
+    """验证 validate returns zero for approved dataset 场景。"""
     exit_code = cli.main(["validate"])
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
@@ -23,11 +24,13 @@ def test_validate_returns_zero_for_approved_dataset(capsys):
 
 
 def test_unknown_dataset_is_rejected():
+    """验证 unknown dataset is rejected 场景。"""
     with pytest.raises(SystemExit):
         cli.main(["execute", "--run-id", "run-001", "--dataset", "bogus"])
 
 
 def test_plan_from_arguments_selects_split():
+    """验证 plan from arguments selects split 场景。"""
     plan = cli.plan_from_arguments(
         dataset="regression", repetitions=2, mode="gate", rerun_failures=True
     )
@@ -45,6 +48,7 @@ def test_execute_without_prepare_reports_clear_error(tmp_path, monkeypatch, caps
 
 
 def test_execute_requires_seed_marker_when_requested(tmp_path, monkeypatch, capsys):
+    """验证 execute requires seed marker when requested 场景。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     monkeypatch.setattr(
         cli.environment,
@@ -61,6 +65,7 @@ def test_execute_requires_seed_marker_when_requested(tmp_path, monkeypatch, caps
 
 
 def test_execute_rejects_unapproved_dataset(tmp_path, monkeypatch, capsys):
+    """验证 execute rejects unapproved dataset 场景。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     monkeypatch.setattr(
         cli.environment,
@@ -79,6 +84,7 @@ def test_execute_rejects_unapproved_dataset(tmp_path, monkeypatch, capsys):
 
 
 def test_seed_command_writes_marker(tmp_path, monkeypatch):
+    """验证 seed command writes marker 场景。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     monkeypatch.setattr(cli, "_settings", lambda: object())
     monkeypatch.setattr(cli, "_fixture_manager", lambda settings: object())
@@ -96,6 +102,7 @@ def test_seed_command_writes_marker(tmp_path, monkeypatch):
 
 
 def test_check_binding_command_prints_result(tmp_path, monkeypatch, capsys):
+    """验证 check binding command prints result 场景。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     monkeypatch.setattr(cli, "_settings", lambda: object())
     monkeypatch.setattr(
@@ -124,11 +131,13 @@ def test_main_maps_value_error_to_exit_two(tmp_path, monkeypatch, capsys):
     """配置类错误（如缺角色）应返回结构化退出码 2，而不是抛 traceback。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     def boom(run_id, runtime_dir):
+        """处理 boom 相关逻辑。"""
         return "engine_agent_eval_x"
     monkeypatch.setattr(cli.environment, "database_name", boom)
     monkeypatch.setattr(cli, "_dataset_approved", lambda: True)
 
     def raising_runner(plan, *, run_id, settings, runtime_dir, manage_fixtures):
+        """处理 raising runner 相关逻辑。"""
         raise ValueError("评测身份夹具缺少角色: ghost")
 
     exit_code = cli.main(["execute", "--run-id", "run-001", "--repetitions", "1"])
@@ -137,6 +146,7 @@ def test_main_maps_value_error_to_exit_two(tmp_path, monkeypatch, capsys):
 
 
 def test_execute_passes_manage_fixtures(tmp_path, monkeypatch):
+    """验证 execute passes manage fixtures 场景。"""
     monkeypatch.setattr(cli, "RUNTIME_DIR", tmp_path)
     monkeypatch.setattr(
         cli.environment,
@@ -149,6 +159,7 @@ def test_execute_passes_manage_fixtures(tmp_path, monkeypatch):
     seen = {}
 
     def fake_run_all(plan, *, run_id, settings, runtime_dir, manage_fixtures):
+        """处理 fake run all 相关逻辑。"""
         seen["manage_fixtures"] = manage_fixtures
         return SimpleNamespace(exit_code=0)
 

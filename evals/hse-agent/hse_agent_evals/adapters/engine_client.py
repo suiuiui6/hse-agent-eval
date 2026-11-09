@@ -7,6 +7,7 @@ import httpx
 
 
 class EngineClient:
+    """处理 EngineClient 相关逻辑。"""
     def __init__(
         self,
         base_url: str = "http://127.0.0.1:18081",
@@ -14,6 +15,7 @@ class EngineClient:
         client: httpx.Client | None = None,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
+        """初始化实例。"""
         if client is not None and transport is not None:
             raise ValueError("不能同时注入 HTTP 客户端和 Transport")
         if client is None:
@@ -27,6 +29,7 @@ class EngineClient:
         self.client = client
 
     def login(self, username: str, password: str) -> str:
+        """处理 login 相关逻辑。"""
         _require_nonblank(username, "用户名")
         _require_nonblank(password, "密码")
         try:
@@ -54,6 +57,7 @@ class EngineClient:
         session_id: str,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
+        """处理 chat 相关逻辑。"""
         _require_nonblank(message, "消息")
         _require_nonblank(session_id, "会话标识")
         payload = {
@@ -66,6 +70,7 @@ class EngineClient:
         )
 
     def binding(self, token: str) -> dict[str, Any]:
+        """处理 binding 相关逻辑。"""
         return self._get_agent_json(
             token, "/hse/agent/eval/binding", "绑定检查失败"
         )
@@ -79,6 +84,7 @@ class EngineClient:
         session_id: str,
         turn_id: str,
     ) -> dict[str, Any]:
+        """处理 confirm 相关逻辑。"""
         return self._post_agent_json(
             token,
             "/hse/agent/confirm",
@@ -101,6 +107,7 @@ class EngineClient:
         session_id: str,
         turn_id: str,
     ) -> dict[str, Any]:
+        """处理 cancel 相关逻辑。"""
         return self._post_agent_json(
             token,
             "/hse/agent/cancel",
@@ -115,6 +122,7 @@ class EngineClient:
         )
 
     def clear(self, token: str, session_id: str) -> dict[str, Any]:
+        """处理 clear 相关逻辑。"""
         return self._post_agent_json(
             token,
             "/hse/agent/clear",
@@ -129,6 +137,7 @@ class EngineClient:
         payload: dict[str, Any],
         error_prefix: str,
     ) -> dict[str, Any]:
+        """post agent json 的内部辅助逻辑。"""
         _require_nonblank(token, "访问令牌")
         try:
             response = self.client.post(
@@ -147,6 +156,7 @@ class EngineClient:
         path: str,
         error_prefix: str,
     ) -> dict[str, Any]:
+        """get agent json 的内部辅助逻辑。"""
         _require_nonblank(token, "访问令牌")
         try:
             response = self.client.get(
@@ -159,16 +169,20 @@ class EngineClient:
         return _unwrap_ajax_dict(response, error_prefix)
 
     def close(self) -> None:
+        """处理 close 相关逻辑。"""
         self.client.close()
 
     def __enter__(self) -> EngineClient:
+        """处理   enter   相关逻辑。"""
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """处理   exit   相关逻辑。"""
         self.close()
 
 
 def _unwrap_ajax_dict(response: httpx.Response, error_prefix: str) -> dict[str, Any]:
+    """unwrap ajax dict 的内部辅助逻辑。"""
     try:
         body = response.json()
     except ValueError:
@@ -183,16 +197,19 @@ def _unwrap_ajax_dict(response: httpx.Response, error_prefix: str) -> dict[str, 
 
 
 def _require_nonblank(value: str, label: str) -> None:
+    """require nonblank 的内部辅助逻辑。"""
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{label}不能为空")
 
 
 def _require_text(value: str, label: str) -> str:
+    """require text 的内部辅助逻辑。"""
     _require_nonblank(value, label)
     return value
 
 
 def _require_dict(value: dict[str, Any] | None) -> dict[str, Any]:
+    """require dict 的内部辅助逻辑。"""
     if value is None:
         return {}
     if not isinstance(value, dict):
@@ -201,6 +218,7 @@ def _require_dict(value: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def _ensure_idempotency_key(value: str | None) -> str:
+    """ensure idempotency key 的内部辅助逻辑。"""
     if isinstance(value, str) and value.strip():
         return value
     return str(uuid4())

@@ -13,6 +13,7 @@ DATABASE = "engine_agent_eval_run_x"
 
 
 def _state(**overrides):
+    """state 的内部辅助逻辑。"""
     settings = make_settings()
     state = {
         "run_id": "run-001",
@@ -32,6 +33,7 @@ def _state(**overrides):
 
 
 def test_binding_guard_accepts_matching_state():
+    """验证 binding guard accepts matching state 场景。"""
     BackendBindingGuard(_state(), make_settings()).validate("run-001")
 
 
@@ -44,6 +46,7 @@ def test_binding_guard_rejects_port_drift():
 
 
 def test_binding_guard_rejects_non_eval_database():
+    """验证 binding guard rejects non eval database 场景。"""
     with pytest.raises(ValueError, match="绑定不安全"):
         BackendBindingGuard(_state(database_name="ENGINE-vue"), make_settings()).validate("run-001")
 
@@ -56,16 +59,19 @@ def test_binding_guard_rejects_jdbc_host_mismatch():
 
 
 def test_binding_guard_rejects_redis_db_drift():
+    """验证 binding guard rejects redis db drift 场景。"""
     with pytest.raises(ValueError, match="绑定不安全"):
         BackendBindingGuard(_state(redis_database=0), make_settings()).validate("run-001")
 
 
 def test_binding_guard_rejects_run_id_mismatch():
+    """验证 binding guard rejects run id mismatch 场景。"""
     with pytest.raises(ValueError, match="绑定不安全"):
         BackendBindingGuard(_state(), make_settings()).validate("other-run")
 
 
 def test_integrity_guard_rejects_non_eval_database():
+    """验证 integrity guard rejects non eval database 场景。"""
     manager = FixtureManager(connection_factory=Mock(), prefix="engine_agent_eval_")
     with pytest.raises(ValueError, match="非评测数据库"):
         MySqlIntegrityGuard(manager, "ENGINE-vue")

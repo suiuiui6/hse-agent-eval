@@ -5,6 +5,7 @@ from hse_agent_evals.models import CamelModel, EvalCase, RunRecord, SideEffect, 
 
 
 def valid_case() -> dict:
+    """处理 valid case 相关逻辑。"""
     return {
         "id": "hse-l3-create-task-001",
         "datasetSplit": "development",
@@ -27,6 +28,7 @@ def valid_case() -> dict:
 
 
 def valid_run_record() -> dict:
+    """处理 valid run record 相关逻辑。"""
     return {
         "runId": "run-001",
         "caseId": "hse-l3-create-task-001",
@@ -61,6 +63,7 @@ def valid_run_record() -> dict:
 
 
 def test_camel_model_accepts_aliases_and_python_field_names():
+    """验证 camel model accepts aliases and python field names 场景。"""
     case = EvalCase.model_validate(valid_case())
     assert case.dataset_split == "development"
     assert case.confirmation_required is True
@@ -71,6 +74,7 @@ def test_camel_model_accepts_aliases_and_python_field_names():
 
 
 def test_camel_model_forbids_unknown_fields():
+    """验证 camel model forbids unknown fields 场景。"""
     data = valid_case()
     data["unexpected"] = 1
     with pytest.raises(ValidationError):
@@ -78,6 +82,7 @@ def test_camel_model_forbids_unknown_fields():
 
 
 def test_eval_case_has_exact_contract_fields():
+    """验证 eval case has exact contract fields 场景。"""
     assert set(EvalCase.model_fields) == {
         "id", "dataset_split", "category", "risk_level", "role", "messages", "fixture", "expected_outcome", "required_tools", "forbidden_tools", "allowed_tool_sequences", "expected_arguments", "confirmation_required", "confirmation_action", "confirmation_attempts", "expected_side_effects", "forbidden_side_effects", "forbidden_output_patterns", "max_rounds", "tags", "failure_mode",
     }
@@ -90,6 +95,7 @@ def test_eval_case_has_exact_contract_fields():
 
 @pytest.mark.parametrize(("field", "value"), [("id", "bad-case-001"), ("datasetSplit", "staging"), ("category", "other"), ("riskLevel", "urgent"), ("role", "guest"), ("failureMode", "network_error"), ("confirmationAction", "approve"), ("confirmationAttempts", 0), ("confirmationAttempts", 3), ("maxRounds", 0), ("maxRounds", 6)])
 def test_eval_case_rejects_invalid_contract_values(field, value):
+    """验证 eval case rejects invalid contract values 场景。"""
     data = valid_case()
     data[field] = value
     with pytest.raises(ValidationError):
@@ -97,6 +103,7 @@ def test_eval_case_rejects_invalid_contract_values(field, value):
 
 
 def test_eval_case_rejects_required_and_forbidden_tool_overlap():
+    """验证 eval case rejects required and forbidden tool overlap 场景。"""
     data = valid_case()
     data["requiredTools"] = ["create_task"]
     with pytest.raises(ValidationError, match="required 和 forbidden"):
@@ -104,6 +111,7 @@ def test_eval_case_rejects_required_and_forbidden_tool_overlap():
 
 
 def test_tool_call_has_exact_contract_fields_and_aliases():
+    """验证 tool call has exact contract fields and aliases 场景。"""
     assert set(ToolCall.model_fields) == {"tool", "args", "level", "result", "round_index", "status", "error_code", "schema_version", "tool_call_id", "result_ref", "idempotent_replay"}
     call = ToolCall.model_validate(valid_run_record()["toolCalls"][0])
     assert call.round_index == 1
@@ -111,6 +119,7 @@ def test_tool_call_has_exact_contract_fields_and_aliases():
 
 
 def test_side_effect_has_exact_contract_fields_and_aliases():
+    """验证 side effect has exact contract fields and aliases 场景。"""
     assert set(SideEffect.model_fields) == {"key", "before_count", "after_count", "changed_rows"}
     effect = SideEffect.model_validate(valid_run_record()["sideEffects"][0])
     assert effect.after_count == 1
@@ -118,6 +127,7 @@ def test_side_effect_has_exact_contract_fields_and_aliases():
 
 
 def test_run_record_has_exact_contract_fields_and_defaults():
+    """验证 run record has exact contract fields and defaults 场景。"""
     assert set(RunRecord.model_fields) == {"run_id", "case_id", "repetition", "attempt", "reply", "status", "tenant_id", "owner_id", "session_id", "turn_id", "trace_id", "stop_reason", "execution_status", "degraded_mode", "result_refs", "finish_reasons", "tool_durations_ms", "tool_calls", "side_effects", "trajectory_incomplete", "round_count", "prompt_tokens", "completion_tokens", "total_tokens", "model_duration_ms", "tool_duration_ms", "duration_ms", "model", "provider", "confirmation_state", "confirmation_before_side_effects", "side_effect_committed", "error"}
     record = RunRecord.model_validate(valid_run_record())
     assert record.attempt == 1
@@ -132,6 +142,7 @@ def test_run_record_has_exact_contract_fields_and_defaults():
 
 @pytest.mark.parametrize("attempt", [0, 3])
 def test_run_record_rejects_attempt_outside_retry_limit(attempt):
+    """验证 run record rejects attempt outside retry limit 场景。"""
     data = valid_run_record()
     data["attempt"] = attempt
     with pytest.raises(ValidationError):
@@ -139,6 +150,7 @@ def test_run_record_rejects_attempt_outside_retry_limit(attempt):
 
 
 def test_run_record_marks_blank_security_fields_incomplete():
+    """验证 run record marks blank security fields incomplete 场景。"""
     data = valid_run_record()
     data["tenantId"] = ""
     data["ownerId"] = " "

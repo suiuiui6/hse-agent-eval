@@ -17,15 +17,18 @@ from _factories import make_case, make_confirm_response, make_response
 
 
 def test_synthesize_finish_reasons_from_response_fields():
+    """验证 synthesize finish reasons from response fields 场景。"""
     assert synthesize_finish_reasons(make_response()) == ["completed"]
 
 
 def test_synthesize_finish_reasons_marks_error_and_confirmation():
+    """验证 synthesize finish reasons marks error and confirmation 场景。"""
     response = make_response(executionStatus="failed", confirmationToken="tok-1")
     assert synthesize_finish_reasons(response) == ["completed", "error", "confirmation"]
 
 
 def test_build_run_record_maps_response_and_marks_telemetry(tmp_path):
+    """验证 build run record maps response and marks telemetry 场景。"""
     record = build_run_record(
         run_id="run-001",
         case=make_case(),
@@ -60,6 +63,7 @@ def test_build_run_record_maps_response_and_marks_telemetry(tmp_path):
 
 
 def test_build_run_record_falls_back_to_execution_status_and_round_count():
+    """验证 build run record falls back to execution status and round count 场景。"""
     response = make_response()
     response.pop("status")
     response.pop("roundCount")
@@ -88,6 +92,7 @@ def test_build_run_record_falls_back_to_execution_status_and_round_count():
 
 
 def test_build_run_record_preserves_explicit_zero_round_count():
+    """验证 build run record preserves explicit zero round count 场景。"""
     response = make_response(
         status="error",
         executionStatus="error",
@@ -118,6 +123,7 @@ def test_build_run_record_preserves_explicit_zero_round_count():
 
 
 def test_merge_confirmation_response_replaces_pending_call():
+    """验证 merge confirmation response replaces pending call 场景。"""
     initial = make_response(
         status="pending_confirmation",
         executionStatus="pending",
@@ -161,6 +167,7 @@ def test_merge_confirmation_response_replaces_pending_call():
 
 
 def test_merge_confirmation_response_preserves_cancelled_status():
+    """验证 merge confirmation response preserves cancelled status 场景。"""
     initial = make_response(
         status="pending_confirmation",
         executionStatus="pending",
@@ -183,6 +190,7 @@ def test_merge_confirmation_response_preserves_cancelled_status():
 
 
 def test_verify_backend_binding_rejects_wrong_database(monkeypatch, tmp_path):
+    """验证 verify backend binding rejects wrong database 场景。"""
     from hse_agent_evals import runner as runner_module
 
     identity_path = tmp_path / "users.json"
@@ -210,19 +218,25 @@ def test_verify_backend_binding_rejects_wrong_database(monkeypatch, tmp_path):
     )
 
     class FakeClient:
+        """处理 FakeClient 相关逻辑。"""
         def __init__(self, **kwargs):
+            """初始化实例。"""
             pass
 
         def __enter__(self):
+            """处理   enter   相关逻辑。"""
             return self
 
         def __exit__(self, *args):
+            """处理   exit   相关逻辑。"""
             return False
 
         def login(self, username, password):
+            """处理 login 相关逻辑。"""
             return "token"
 
         def binding(self, token):
+            """处理 binding 相关逻辑。"""
             return {"database": "engine_agent_eval_wrong", "profile": "agent-eval"}
 
     monkeypatch.setattr(runner_module, "IDENTITIES_PATH", identity_path)
@@ -233,6 +247,7 @@ def test_verify_backend_binding_rejects_wrong_database(monkeypatch, tmp_path):
 
 
 def test_verify_backend_binding_returns_selected_database(monkeypatch, tmp_path):
+    """验证 verify backend binding returns selected database 场景。"""
     from hse_agent_evals import runner as runner_module
 
     identity_path = tmp_path / "users.json"
@@ -260,19 +275,25 @@ def test_verify_backend_binding_returns_selected_database(monkeypatch, tmp_path)
     )
 
     class FakeClient:
+        """处理 FakeClient 相关逻辑。"""
         def __init__(self, **kwargs):
+            """初始化实例。"""
             pass
 
         def __enter__(self):
+            """处理   enter   相关逻辑。"""
             return self
 
         def __exit__(self, *args):
+            """处理   exit   相关逻辑。"""
             return False
 
         def login(self, username, password):
+            """处理 login 相关逻辑。"""
             return "token"
 
         def binding(self, token):
+            """处理 binding 相关逻辑。"""
             return {
                 "database": "engine_agent_eval_expected",
                 "profile": "agent-eval",
@@ -293,6 +314,7 @@ def test_verify_backend_binding_returns_selected_database(monkeypatch, tmp_path)
 
 
 def test_build_run_record_marks_incomplete_when_stop_reason_absent():
+    """验证 build run record marks incomplete when stop reason absent 场景。"""
     record = build_run_record(
         run_id="run-001",
         case=make_case(),
@@ -315,6 +337,7 @@ def test_build_run_record_marks_incomplete_when_stop_reason_absent():
 
 
 def test_build_run_record_marks_incomplete_without_identity():
+    """验证 build run record marks incomplete without identity 场景。"""
     record = build_run_record(
         run_id="run-001",
         case=make_case(),
@@ -336,6 +359,7 @@ def test_build_run_record_marks_incomplete_without_identity():
 
 
 def test_raw_store_appends_and_resumes_without_overwrite(tmp_path):
+    """验证 raw store appends and resumes without overwrite 场景。"""
     store = RawRunStore(tmp_path / "run-001")
     record = build_run_record(
         run_id="run-001",
@@ -381,6 +405,7 @@ def test_raw_store_lease_excludes_concurrent_writer(tmp_path):
 
 
 def test_raw_store_lease_is_reusable_after_release(tmp_path):
+    """验证 raw store lease is reusable after release 场景。"""
     store = RawRunStore(tmp_path / "run-001")
     with store.lease():
         pass
@@ -390,6 +415,7 @@ def test_raw_store_lease_is_reusable_after_release(tmp_path):
 
 
 def test_raw_store_tolerates_torn_last_line(tmp_path):
+    """验证 raw store tolerates torn last line 场景。"""
     run_dir = tmp_path / "run-001"
     store = RawRunStore(run_dir)
     store.append(
@@ -425,25 +451,31 @@ class FakeFixtureManager:
     """只实现 runner 需要的三个方法；不做任何数据库操作。"""
 
     def __init__(self, effects=None, fail_snapshot=False):
+        """初始化实例。"""
         self.effects = effects or []
         self.fail_snapshot = fail_snapshot
         self.calls: list[str] = []
 
     def snapshot_before(self, database_name):
+        """处理 snapshot before 相关逻辑。"""
         self.calls.append("snapshot_before")
         return {"hse_report_task.insert": []}
 
     def snapshot_after(self, database_name):
+        """处理 snapshot after 相关逻辑。"""
         self.calls.append("snapshot_after")
         return {"hse_report_task.insert": [{"task_id": 980001}]}
 
     def diff(self, before, after):
+        """处理 diff 相关逻辑。"""
         self.calls.append("diff")
         return list(self.effects)
 
 
 class FakeEngineClient:
+    """处理 FakeEngineClient 相关逻辑。"""
     def __init__(self, response=None, confirm_response=None, cancel_response=None):
+        """初始化实例。"""
         self.response = response or make_response()
         self.confirm_response = confirm_response
         self.cancel_response = cancel_response
@@ -452,15 +484,18 @@ class FakeEngineClient:
         self.chat_messages: list[str] = []
 
     def chat(self, token, message, session_id, idempotency_key=None):
+        """处理 chat 相关逻辑。"""
         self.chat_messages.append(message)
         payload = self.response(message) if callable(self.response) else self.response
         return dict(payload)
 
     def confirm(self, token, confirmation_token, tool_name, args, session_id, turn_id):
+        """处理 confirm 相关逻辑。"""
         self.confirm_calls += 1
         return dict(self.confirm_response or self.response)
 
     def cancel(self, token, confirmation_token, tool_name, args, session_id, turn_id):
+        """处理 cancel 相关逻辑。"""
         self.cancel_calls += 1
         return dict(
             self.cancel_response
@@ -469,6 +504,7 @@ class FakeEngineClient:
 
 
 def _stub_environment(monkeypatch):
+    """stub environment 的内部辅助逻辑。"""
     from hse_agent_evals import runner as runner_module
 
     monkeypatch.setattr(runner_module.environment, "database_name", lambda run_id, runtime_dir: "engine_agent_eval_x")
@@ -485,22 +521,29 @@ def _stub_environment(monkeypatch):
 
 
 class _PassThrough:
+    """PassThrough 的内部辅助逻辑。"""
     def validate(self, run_id):
+        """处理 validate 相关逻辑。"""
         return None
 
     def immutable_hash(self, run_id):
+        """处理 immutable hash 相关逻辑。"""
         return "stub-hash"
 
 
 class _ModeProxy:
+    """ModeProxy 的内部辅助逻辑。"""
     def __init__(self):
+        """初始化实例。"""
         self.modes: list[str] = []
 
     def set_mode(self, mode):
+        """处理 set mode 相关逻辑。"""
         self.modes.append(mode)
 
 
 def test_apply_case_failure_mode_sets_model_and_clears_graphrag():
+    """验证 apply case failure mode sets model and clears graphrag 场景。"""
     model = _ModeProxy()
     graphrag = _ModeProxy()
 
@@ -515,6 +558,7 @@ def test_apply_case_failure_mode_sets_model_and_clears_graphrag():
 
 
 def test_apply_case_failure_mode_sets_graphrag_timeout():
+    """验证 apply case failure mode sets graphrag timeout 场景。"""
     model = _ModeProxy()
     graphrag = _ModeProxy()
 
@@ -529,6 +573,7 @@ def test_apply_case_failure_mode_sets_graphrag_timeout():
 
 
 def test_apply_case_failure_mode_requires_managed_proxy():
+    """验证 apply case failure mode requires managed proxy 场景。"""
     with pytest.raises(RuntimeError, match="模型代理"):
         _apply_case_failure_mode(
             make_case(failureMode="model_empty"),
@@ -538,6 +583,7 @@ def test_apply_case_failure_mode_requires_managed_proxy():
 
 
 def test_run_case_plays_all_messages_and_returns_record(monkeypatch, tmp_path):
+    """验证 run case plays all messages and returns record 场景。"""
     _stub_environment(monkeypatch)
     case = make_case(messages=["消息A", "消息B"])
     # 每条消息返回不同响应，证明记录的是【最后一条】的结果而非其中任意一条
@@ -573,6 +619,7 @@ def test_run_case_plays_all_messages_and_returns_record(monkeypatch, tmp_path):
 
 
 def test_run_case_applies_and_resets_failure_mode(monkeypatch, tmp_path):
+    """验证 run case applies and resets failure mode 场景。"""
     _stub_environment(monkeypatch)
     model = _ModeProxy()
     graphrag = _ModeProxy()
@@ -599,9 +646,11 @@ def test_run_case_applies_and_resets_failure_mode(monkeypatch, tmp_path):
 
 
 def test_run_case_accumulates_tool_calls_across_turns(monkeypatch, tmp_path):
+    """验证 run case accumulates tool calls across turns 场景。"""
     _stub_environment(monkeypatch)
 
     def response(message):
+        """处理 response 相关逻辑。"""
         tool = "get_my_tasks" if message == "消息A" else "get_alerts"
         return make_response(
             toolCalls=[
@@ -642,6 +691,7 @@ def test_run_case_accumulates_tool_calls_across_turns(monkeypatch, tmp_path):
 
 
 def test_run_case_cancels_confirmation(monkeypatch, tmp_path):
+    """验证 run case cancels confirmation 场景。"""
     _stub_environment(monkeypatch)
     client = FakeEngineClient(
         response=make_response(
@@ -699,6 +749,7 @@ def test_run_case_cancels_confirmation(monkeypatch, tmp_path):
 
 
 def test_run_case_repeats_confirmation_when_requested(monkeypatch, tmp_path):
+    """验证 run case repeats confirmation when requested 场景。"""
     _stub_environment(monkeypatch)
     client = FakeEngineClient(
         response=make_response(
@@ -754,9 +805,11 @@ def test_run_case_repeats_confirmation_when_requested(monkeypatch, tmp_path):
 
 
 def test_run_case_treats_infrastructure_failure_as_non_fatal(monkeypatch, tmp_path):
+    """验证 run case treats infrastructure failure as non fatal 场景。"""
     from hse_agent_evals import runner as runner_module
 
     def explode(run_id, fixture_manager, runtime_dir):
+        """处理 explode 相关逻辑。"""
         raise RuntimeError("重置失败")
 
     monkeypatch.setattr(runner_module.environment, "database_name", lambda run_id, runtime_dir: "engine_agent_eval_x")
@@ -782,6 +835,7 @@ def test_run_case_treats_infrastructure_failure_as_non_fatal(monkeypatch, tmp_pa
 
 
 def test_run_case_records_confirmation_ordering_evidence(monkeypatch, tmp_path):
+    """验证 run case records confirmation ordering evidence 场景。"""
     _stub_environment(monkeypatch)
     case = make_case(confirmationRequired=True)
     client = FakeEngineClient(
@@ -863,7 +917,9 @@ def _fake_factories(monkeypatch, outcomes_by_case):
     calls: list[str] = []
 
     def fake_run_case_factory():
+        """处理 fake run case factory 相关逻辑。"""
         def fake_run_case(**kwargs):
+            """处理 fake run case 相关逻辑。"""
             case = kwargs["case"]
             calls.append(run_key(case.id, kwargs["repetition"], kwargs["attempt"]))
             return outcomes_by_case(case, kwargs["repetition"], kwargs["attempt"])
@@ -874,6 +930,7 @@ def _fake_factories(monkeypatch, outcomes_by_case):
 
 
 def test_run_all_rejects_failure_modes_without_managed_fixtures(tmp_path):
+    """验证 run all rejects failure modes without managed fixtures 场景。"""
     plan = ExecutionPlan(
         cases=[make_case(failureMode="model_500")],
         repetitions=1,
@@ -892,9 +949,11 @@ def test_run_all_rejects_failure_modes_without_managed_fixtures(tmp_path):
 
 
 def test_run_all_produces_expected_number_of_records(monkeypatch, tmp_path):
+    """验证 run all produces expected number of records 场景。"""
     cases = [make_case(), make_case(id="hse-l1-search-002")]
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         return RunOutcome(
             record=build_run_record(
                 run_id="run-001",
@@ -928,9 +987,11 @@ def test_run_all_produces_expected_number_of_records(monkeypatch, tmp_path):
 
 
 def test_run_all_resumes_without_re_executing(monkeypatch, tmp_path):
+    """验证 run all resumes without re executing 场景。"""
     cases = [make_case()]
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         return RunOutcome(
             record=build_run_record(
                 run_id="run-001",
@@ -966,6 +1027,7 @@ def test_run_all_resumes_without_re_executing(monkeypatch, tmp_path):
 
 
 def test_plan_execution_filters_dataset_split():
+    """验证 plan execution filters dataset split 场景。"""
     cases = [make_case(), make_case(id="hse-l1-search-002", datasetSplit="regression")]
     plan = plan_execution(cases, dataset="regression", repetitions=1, mode="baseline", rerun_failures=False)
     assert [case.id for case in plan.cases] == ["hse-l1-search-002"]
@@ -976,6 +1038,7 @@ def test_run_all_gate_mode_fails_on_zero_tolerance_violation(monkeypatch, tmp_pa
     cases = [make_case()]
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         return RunOutcome(
             record=build_run_record(
                 run_id="run-001",
@@ -1011,6 +1074,7 @@ def test_run_all_propagates_fatal_outcome(monkeypatch, tmp_path):
     cases = [make_case()]
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         return RunOutcome(
             record=build_run_record(
                 run_id="run-001",
@@ -1048,6 +1112,7 @@ def test_run_all_rerun_failures_retries_as_second_attempt(monkeypatch, tmp_path)
     attempts: list[int] = []
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         attempts.append(attempt)
         # 首次失败（无工具调用），重跑成功
         failed = attempt == 1
@@ -1093,6 +1158,7 @@ def test_run_all_fails_when_no_records_landed(monkeypatch, tmp_path):
     cases = [make_case()]
 
     def outcomes(case, repetition, attempt):
+        """处理 outcomes 相关逻辑。"""
         return RunOutcome(None, "执行用例失败: 后端不可用", False)
 
     _fake_factories(monkeypatch, outcomes)

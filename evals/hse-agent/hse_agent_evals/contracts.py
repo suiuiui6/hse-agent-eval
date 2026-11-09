@@ -22,4 +22,5 @@ KNOWN_SIDE_EFFECT_KEYS = SIDE_EFFECT_KEYS | frozenset(SIDE_EFFECT_ALIASES)
 
 
 def canonical_side_effect_key(key: str) -> str:
+    """处理 canonical side effect key 相关逻辑。"""
     return SIDE_EFFECT_ALIASES.get(key, key)

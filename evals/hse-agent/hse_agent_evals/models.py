@@ -6,15 +6,18 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 def to_camel(value: str) -> str:
+    """处理 to camel 相关逻辑。"""
     head, *tail = value.split("_")
     return head + "".join(part.title() for part in tail)
 
 
 class CamelModel(BaseModel):
+    """处理 CamelModel 相关逻辑。"""
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="forbid")
 
 
 class EvalCase(CamelModel):
+    """处理 EvalCase 相关逻辑。"""
     id: str = Field(pattern=r"^hse-[a-z0-9-]+-\d{3}$")
     dataset_split: Literal["development", "regression"]
     category: Literal["no_tool", "l1", "l2", "l3", "multi_tool", "boundary", "security", "failure"]
@@ -41,6 +44,7 @@ class EvalCase(CamelModel):
 
     @model_validator(mode="after")
     def validate_tool_sets(self) -> "EvalCase":
+        """处理 validate tool sets 相关逻辑。"""
         overlap = set(self.required_tools) & set(self.forbidden_tools)
         if overlap:
             raise ValueError(f"工具同时出现在 required 和 forbidden: {sorted(overlap)}")
@@ -48,6 +52,7 @@ class EvalCase(CamelModel):
 
 
 class ToolCall(CamelModel):
+    """处理 ToolCall 相关逻辑。"""
     tool: str
     args: dict[str, Any]
     level: str
@@ -62,6 +67,7 @@ class ToolCall(CamelModel):
 
 
 class SideEffect(CamelModel):
+    """处理 SideEffect 相关逻辑。"""
     key: str
     before_count: int
     after_count: int
@@ -69,6 +75,7 @@ class SideEffect(CamelModel):
 
 
 class RunRecord(CamelModel):
+    """处理 RunRecord 相关逻辑。"""
     run_id: str
     case_id: str
     repetition: int
@@ -105,6 +112,7 @@ class RunRecord(CamelModel):
 
     @model_validator(mode="after")
     def mark_incomplete_when_security_evidence_blank(self) -> "RunRecord":
+        """处理 mark incomplete when security evidence blank 相关逻辑。"""
         critical_values = [
             self.tenant_id,
             self.owner_id,

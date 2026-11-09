@@ -8,6 +8,7 @@ from typing import Any
 
 
 def post(base_url: str, path: str, payload: dict[str, Any], token: str | None = None) -> dict[str, Any]:
+    """处理 post 相关逻辑。"""
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -25,6 +26,7 @@ def post(base_url: str, path: str, payload: dict[str, Any], token: str | None = 
 
 
 def chat(base_url: str, token: str, message: str) -> dict[str, Any]:
+    """处理 chat 相关逻辑。"""
     body = post(
         base_url,
         "/hse/agent/chat",
@@ -37,6 +39,7 @@ def chat(base_url: str, token: str, message: str) -> dict[str, Any]:
 
 
 def main() -> int:
+    """处理 main 相关逻辑。"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default="http://127.0.0.1:18091")
     args = parser.parse_args()

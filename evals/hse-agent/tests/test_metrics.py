@@ -9,6 +9,7 @@ from _factories import make_case, make_response
 
 
 def test_percentile_uses_linear_interpolation():
+    """验证 percentile uses linear interpolation 场景。"""
     assert percentile([1, 2, 5], 50) == 2
     assert percentile([1, 2, 5], 95) == pytest.approx(4.7)
     assert percentile([], 50) is None
@@ -16,14 +17,17 @@ def test_percentile_uses_linear_interpolation():
 
 
 def test_cost_is_null_without_pricing_evidence():
+    """验证 cost is null without pricing evidence 场景。"""
     assert cost_cny(model_duration_ms=60000, gpu_hourly_cost_cny=None) is None
 
 
 def test_cost_uses_gpu_hourly_rate():
+    """验证 cost uses gpu hourly rate 场景。"""
     assert cost_cny(model_duration_ms=60000, gpu_hourly_cost_cny=6) == pytest.approx(0.1)
 
 
 def _run(case, repetition, *, status="success", rounds=1, tokens=110):
+    """run 的内部辅助逻辑。"""
     return build_run_record(
         run_id="run-001",
         case=case,
@@ -43,6 +47,7 @@ def _run(case, repetition, *, status="success", rounds=1, tokens=110):
 
 
 def _scores(case_id, repetition, passed):
+    """scores 的内部辅助逻辑。"""
     return [
         {
             "caseId": case_id,
@@ -57,6 +62,7 @@ def _scores(case_id, repetition, passed):
 
 
 def test_aggregate_counts_failures_in_denominator():
+    """验证 aggregate counts failures in denominator 场景。"""
     case = make_case()
     runs = [_run(case, 1), _run(case, 2), _run(case, 3, status="failed")]
     scores = _scores(case.id, 1, True) + _scores(case.id, 2, True) + _scores(case.id, 3, False)
@@ -73,6 +79,7 @@ def test_aggregate_counts_failures_in_denominator():
 
 
 def test_aggregate_keeps_missing_records_in_denominator():
+    """验证 aggregate keeps missing records in denominator 场景。"""
     case = make_case()
     plan = ExecutionPlan(cases=[case], repetitions=3, mode="baseline", dataset="all", rerun_failures=False)
 
@@ -127,6 +134,7 @@ def test_slice_metrics_rejects_unknown_dimension():
 
 
 def test_slice_metrics_accepts_camel_and_snake_dimension():
+    """验证 slice metrics accepts camel and snake dimension 场景。"""
     case = make_case(riskLevel="high")
     runs = [_run(case, 1)]
     scores = _scores(case.id, 1, True)

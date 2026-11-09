@@ -33,6 +33,16 @@ cd evals/hse-agent
 python -m pytest tests -q
 ```
 
+### 依赖锁定
+
+需要 Python 3.12：
+
+```bash
+pip install -r evals/hse-agent/requirements.lock.txt
+```
+
+锁定依赖已通过 `pip-audit`，无已知漏洞。
+
 ### 完整评测
 
 需要兼容的 Agent 后端和自备 fixture；设计说明见 [docs/case-study.md](docs/case-study.md)。

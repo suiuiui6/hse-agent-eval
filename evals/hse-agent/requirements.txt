@@ -1,9 +1,5 @@
-strands-agents-evals==1.0.2
-strands-agents==1.48.0
-strands-agents-tools==0.8.4
-mcp==1.28.1
 httpx==0.27.2
 pydantic==2.11.10
 pydantic-settings==2.5.2
 PyMySQL==1.1.1
-pytest==8.3.2
+pytest==9.0.3

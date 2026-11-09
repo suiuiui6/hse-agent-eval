@@ -12,10 +12,12 @@ TRACE_ID = "trace-demo-1"
 
 
 def _reply(payload: dict[str, Any]) -> dict[str, Any]:
+    """reply 的内部辅助逻辑。"""
     return {"code": 200, "msg": "ok", "data": payload}
 
 
 def _base_payload(reply: str, *, status: str, execution_status: str) -> dict[str, Any]:
+    """base payload 的内部辅助逻辑。"""
     return {
         "reply": reply,
         "sessionId": "session-demo",
@@ -38,6 +40,7 @@ def _base_payload(reply: str, *, status: str, execution_status: str) -> dict[str
 
 
 def _read_only_payload() -> dict[str, Any]:
+    """read only payload 的内部辅助逻辑。"""
     payload = _base_payload(
         "当前有两项待办：项目一安全检查、项目二隐患整改。",
         status="success",
@@ -68,6 +71,7 @@ def _read_only_payload() -> dict[str, Any]:
 
 
 def _write_payload(message: str) -> dict[str, Any]:
+    """write payload 的内部辅助逻辑。"""
     if "提醒" in message:
         tool_name = "send_reminder"
         args = {"userId": 980002, "content": "请于今日17时前完成隐患整改"}
@@ -116,6 +120,7 @@ def _write_payload(message: str) -> dict[str, Any]:
 
 
 def _refusal_payload() -> dict[str, Any]:
+    """refusal payload 的内部辅助逻辑。"""
     payload = _base_payload(
         "该请求涉及其他部门数据，当前用户无权访问，已拒绝。",
         status="success",
@@ -125,6 +130,7 @@ def _refusal_payload() -> dict[str, Any]:
 
 
 def _confirmed_payload() -> dict[str, Any]:
+    """confirmed payload 的内部辅助逻辑。"""
     payload = _base_payload(
         "已确认并执行一次操作。",
         status="success",
@@ -153,15 +159,18 @@ def _confirmed_payload() -> dict[str, Any]:
 
 
 class Handler(BaseHTTPRequestHandler):
+    """处理 Handler 相关逻辑。"""
     protocol_version = "HTTP/1.1"
 
     def do_GET(self) -> None:
+        """处理 do GET 相关逻辑。"""
         if self.path == "/health":
             self._send_json(200, {"status": "UP"})
             return
         self._send_json(404, {"code": 404, "msg": "not found"})
 
     def do_POST(self) -> None:
+        """处理 do POST 相关逻辑。"""
         payload = self._read_json()
         if payload is None:
             return
@@ -183,6 +192,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json(404, {"code": 404, "msg": "not found"})
 
     def _read_json(self) -> dict[str, Any] | None:
+        """read json 的内部辅助逻辑。"""
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
@@ -202,6 +212,7 @@ class Handler(BaseHTTPRequestHandler):
         return value
 
     def _send_json(self, status: int, payload: dict[str, Any]) -> None:
+        """send json 的内部辅助逻辑。"""
         body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -212,10 +223,12 @@ class Handler(BaseHTTPRequestHandler):
         self.close_connection = True
 
     def log_message(self, format: str, *args: Any) -> None:
+        """处理 log message 相关逻辑。"""
         return
 
 
 def main() -> None:
+    """处理 main 相关逻辑。"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=18091)

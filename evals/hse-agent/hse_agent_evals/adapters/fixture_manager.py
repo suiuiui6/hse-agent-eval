@@ -42,13 +42,16 @@ VOLATILE_TIMESTAMP_KEYS = {"create_time", "update_time"}
 
 
 class FixtureManager:
+    """处理 FixtureManager 相关逻辑。"""
     def __init__(self, connection_factory: Callable[..., Any], prefix: str) -> None:
+        """初始化实例。"""
         if prefix != DATABASE_PREFIX:
             raise ValueError(f"评测数据库前缀必须为 {DATABASE_PREFIX}")
         self.connection_factory = connection_factory
         self.prefix = prefix
 
     def new_database_name(self, run_id: str) -> str:
+        """处理 new database name 相关逻辑。"""
         normalized_run_id = re.sub(r"[^a-z0-9]+", "_", str(run_id).lower()).strip("_")
         if not normalized_run_id:
             raise ValueError("运行标识必须包含字母或数字")
@@ -60,9 +63,11 @@ class FixtureManager:
         return database_name
 
     def create_database(self, database_name: str) -> None:
+        """处理 create database 相关逻辑。"""
         self._validate_database_name(database_name)
 
         def execute(cursor: Any) -> None:
+            """处理 execute 相关逻辑。"""
             self._validate_database_name(database_name)
             cursor.execute(
                 f"CREATE DATABASE `{database_name}` CHARACTER SET utf8mb4"
@@ -75,11 +80,13 @@ class FixtureManager:
         database_name: str,
         script_path: str | Path,
     ) -> None:
+        """处理 execute script 相关逻辑。"""
         self._validate_database_name(database_name)
         script = Path(script_path).read_text(encoding="utf-8-sig")
         statements = self._split_sql_statements(script)
 
         def execute(cursor: Any) -> None:
+            """处理 execute 相关逻辑。"""
             self._validate_database_name(database_name)
             for statement in statements:
                 cursor.execute(statement)
@@ -87,18 +94,22 @@ class FixtureManager:
         self._run_transaction(execute, database=database_name)
 
     def drop_database(self, database_name: str) -> None:
+        """处理 drop database 相关逻辑。"""
         self._validate_drop_target(database_name)
 
         def execute(cursor: Any) -> None:
+            """处理 execute 相关逻辑。"""
             self._validate_drop_target(database_name)
             cursor.execute(f"DROP DATABASE `{database_name}`")
 
         self._run_transaction(execute)
 
     def snapshot(self, database_name: str) -> dict[str, list[dict[str, Any]]]:
+        """处理 snapshot 相关逻辑。"""
         self._validate_database_name(database_name)
 
         def execute(cursor: Any) -> dict[str, list[dict[str, Any]]]:
+            """处理 execute 相关逻辑。"""
             self._validate_database_name(database_name)
             result: dict[str, list[dict[str, Any]]] = {}
             for key, query in SIDE_EFFECT_QUERIES.items():
@@ -112,11 +123,13 @@ class FixtureManager:
     def snapshot_before(
         self, database_name: str
     ) -> dict[str, list[dict[str, Any]]]:
+        """处理 snapshot before 相关逻辑。"""
         return self.snapshot(database_name)
 
     def snapshot_after(
         self, database_name: str
     ) -> dict[str, list[dict[str, Any]]]:
+        """处理 snapshot after 相关逻辑。"""
         return self.snapshot(database_name)
 
     def diff(
@@ -124,6 +137,7 @@ class FixtureManager:
         before: Mapping[str, list[dict[str, Any]]],
         after: Mapping[str, list[dict[str, Any]]],
     ) -> list[SideEffect]:
+        """处理 diff 相关逻辑。"""
         ordered_keys = list(SIDE_EFFECT_QUERIES)
         ordered_keys.extend(sorted((set(before) | set(after)) - set(SIDE_EFFECT_QUERIES)))
         effects: list[SideEffect] = []
@@ -143,6 +157,7 @@ class FixtureManager:
         return effects
 
     def _split_sql_statements(self, script: str) -> list[str]:
+        """split sql statements 的内部辅助逻辑。"""
         active_lines = [
             line
             for line in script.splitlines()
@@ -183,6 +198,7 @@ class FixtureManager:
         return statements
 
     def _validate_database_name(self, database_name: str) -> None:
+        """validate database name 的内部辅助逻辑。"""
         if not isinstance(database_name, str):
             raise ValueError("数据库标识符不安全")
         if not database_name.startswith(DATABASE_PREFIX):
@@ -195,6 +211,7 @@ class FixtureManager:
             raise ValueError(f"数据库标识符不安全: {database_name}")
 
     def _validate_drop_target(self, database_name: str) -> None:
+        """validate drop target 的内部辅助逻辑。"""
         if (
             not isinstance(database_name, str)
             or not database_name.startswith(DATABASE_PREFIX)
@@ -207,6 +224,7 @@ class FixtureManager:
         operation: Callable[[Any], Any],
         database: str | None = None,
     ) -> Any:
+        """run transaction 的内部辅助逻辑。"""
         connection_kwargs: dict[str, Any] = {
             "charset": "utf8mb4",
             "autocommit": False,
@@ -235,6 +253,7 @@ class FixtureManager:
         cursor: Any,
         rows: Any,
     ) -> list[dict[str, Any]]:
+        """mapping rows 的内部辅助逻辑。"""
         rows = list(rows)
         if not rows:
             return []
@@ -249,10 +268,12 @@ class FixtureManager:
         key: str,
         rows: Any,
     ) -> list[dict[str, Any]]:
+        """stable rows 的内部辅助逻辑。"""
         normalized_rows = [self._normalize_value(dict(row)) for row in rows]
         primary_key = SIDE_EFFECT_PRIMARY_KEYS.get(key)
 
         def sort_key(row: dict[str, Any]) -> tuple[Any, ...]:
+            """处理 sort key 相关逻辑。"""
             value = row.get(primary_key) if primary_key else None
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 primary = (0, value)
@@ -265,6 +286,7 @@ class FixtureManager:
         return sorted(normalized_rows, key=sort_key)
 
     def _normalize_value(self, value: Any) -> Any:
+        """normalize value 的内部辅助逻辑。"""
         if isinstance(value, Mapping):
             normalized: dict[str, Any] = {}
             for raw_key in sorted(value, key=lambda item: str(item)):
@@ -299,6 +321,7 @@ class FixtureManager:
         before_rows: list[dict[str, Any]],
         after_rows: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
+        """changed rows 的内部辅助逻辑。"""
         primary_key = SIDE_EFFECT_PRIMARY_KEYS.get(key)
         before_by_identity = {
             self._row_identity(row, primary_key): row for row in before_rows
@@ -321,11 +344,13 @@ class FixtureManager:
         row: dict[str, Any],
         primary_key: str | None,
     ) -> str:
+        """row identity 的内部辅助逻辑。"""
         if primary_key and primary_key in row:
             return f"pk:{self._canonical(row[primary_key])}"
         return f"row:{self._canonical(row)}"
 
     def _canonical(self, value: Any) -> str:
+        """canonical 的内部辅助逻辑。"""
         return json.dumps(
             value,
             ensure_ascii=False,

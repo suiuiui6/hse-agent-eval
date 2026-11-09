@@ -65,6 +65,7 @@ EXPECTED_PRODUCTION_SPLIT_CATEGORY_COUNTS = {
 
 
 def load_cases(path: str | Path) -> list[EvalCase]:
+    """处理 load cases 相关逻辑。"""
     source = Path(path)
     cases: list[EvalCase] = []
     for line_number, line in enumerate(source.read_text(encoding="utf-8-sig").splitlines(), start=1):
@@ -88,6 +89,7 @@ def validate_suite(
     *,
     allow_approved_manifest: bool = False,
 ) -> list[str]:
+    """处理 validate suite 相关逻辑。"""
     errors: list[str] = []
     development_cases = _to_cases(development, "development", errors)
     regression_cases = _to_cases(regression, "regression", errors)
@@ -134,6 +136,7 @@ def validate_production_bundle(
     manifest_path: str | Path,
     review_path: str | Path | None = None,
 ) -> list[str]:
+    """处理 validate production bundle 相关逻辑。"""
     development_source = Path(development_path)
     regression_source = Path(regression_path)
     manifest_source = Path(manifest_path)
@@ -172,6 +175,7 @@ def update_manifest_checksums(
     regression_path: str | Path,
     manifest_path: str | Path,
 ) -> None:
+    """处理 update manifest checksums 相关逻辑。"""
     manifest_file = Path(manifest_path)
     manifest = json.loads(manifest_file.read_text(encoding="utf-8-sig"))
     checksums = manifest.setdefault("checksums", {})
@@ -188,6 +192,7 @@ def _to_cases(
     split: str,
     errors: list[str],
 ) -> list[EvalCase]:
+    """to cases 的内部辅助逻辑。"""
     cases: list[EvalCase] = []
     for index, value in enumerate(values, start=1):
         try:
@@ -203,6 +208,7 @@ def _validate_manifest(
     *,
     allow_approved_manifest: bool = False,
 ) -> None:
+    """validate manifest 的内部辅助逻辑。"""
     if not isinstance(manifest, dict):
         errors.append("manifest 必须为对象")
         return
@@ -233,6 +239,7 @@ def _validate_manifest(
 
 
 def _validate_split_cases(split: str, cases: list[EvalCase], errors: list[str]) -> None:
+    """validate split cases 的内部辅助逻辑。"""
     for case in cases:
         if case.dataset_split != split:
             errors.append(f"{split} 用例 {case.id} 的 datasetSplit 应为 {split}")
@@ -269,18 +276,22 @@ def _validate_split_cases(split: str, cases: list[EvalCase], errors: list[str]) 
 
 
 def _has_cjk(value: str) -> bool:
+    """has cjk 的内部辅助逻辑。"""
     return any("\u4e00" <= character <= "\u9fff" for character in value)
 
 
 def _parse_case(value: dict[str, Any]) -> EvalCase:
+    """parse case 的内部辅助逻辑。"""
     return EvalCase.model_validate(value)
 
 
 def _sha256(path: Path) -> str:
+    """sha256 的内部辅助逻辑。"""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _load_json(path: Path) -> dict[str, Any]:
+    """load json 的内部辅助逻辑。"""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
@@ -289,6 +300,7 @@ def _validate_production_split_layout(
     cases: list[EvalCase],
     errors: list[str],
 ) -> None:
+    """validate production split layout 的内部辅助逻辑。"""
     expected_counts = EXPECTED_PRODUCTION_SPLIT_CATEGORY_COUNTS[split]
     actual_counts = Counter(case.category for case in cases)
     if actual_counts != Counter(expected_counts):
@@ -300,6 +312,7 @@ def _validate_expected_case_order(
     cases: list[EvalCase],
     errors: list[str],
 ) -> None:
+    """validate expected case order 的内部辅助逻辑。"""
     actual_ids = [case.id for case in cases]
     expected_ids = _expected_split_ids(split)
     if actual_ids != expected_ids:
@@ -307,6 +320,7 @@ def _validate_expected_case_order(
 
 
 def _validate_tool_coverage(cases: list[EvalCase], errors: list[str]) -> None:
+    """validate tool coverage 的内部辅助逻辑。"""
     mentioned_counts: Counter[str] = Counter()
     for case in cases:
         for tool_name in _mentioned_tools(case):
@@ -328,6 +342,7 @@ def _validate_tool_coverage(cases: list[EvalCase], errors: list[str]) -> None:
 
 
 def _validate_review_matrix_tags(cases: list[EvalCase], errors: list[str]) -> None:
+    """validate review matrix tags 的内部辅助逻辑。"""
     actual_tags = {
         tag
         for case in cases
@@ -348,6 +363,7 @@ def _validate_manifest_checksums_against_files(
     regression_path: Path,
     errors: list[str],
 ) -> None:
+    """validate manifest checksums against files 的内部辅助逻辑。"""
     checksums = manifest.get("checksums")
     if not isinstance(checksums, dict):
         return
@@ -366,6 +382,7 @@ def _validate_review_record(
     cases: list[EvalCase],
     errors: list[str],
 ) -> None:
+    """validate review record 的内部辅助逻辑。"""
     if not isinstance(review, dict):
         errors.append("review 必须为对象")
         return
@@ -416,6 +433,7 @@ def _validate_review_record(
 
 
 def _expected_split_ids(split: str) -> list[str]:
+    """expected split ids 的内部辅助逻辑。"""
     if split == "development":
         return (
             [f"hse-no-tool-{index:03d}" for index in range(1, 11)]
@@ -433,6 +451,7 @@ def _expected_split_ids(split: str) -> list[str]:
 
 
 def _mentioned_tools(case: EvalCase) -> set[str]:
+    """mentioned tools 的内部辅助逻辑。"""
     tools = (
         set(case.required_tools)
         | set(case.forbidden_tools)

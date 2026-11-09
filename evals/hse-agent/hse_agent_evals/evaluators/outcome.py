@@ -23,7 +23,9 @@ from hse_agent_evals.models import EvalCase, RunRecord
 
 
 class TaskOutcomeEvaluator(Evaluator[EvalCase, RunRecord]):
+    """处理 TaskOutcomeEvaluator 相关逻辑。"""
     def evaluate(self, evaluation_case: EvaluationData) -> list[EvaluationOutput]:
+        """处理 evaluate 相关逻辑。"""
         inputs = evaluation_inputs(evaluation_case)
         if inputs is None:
             return invalid_evaluation_output("task_outcome")

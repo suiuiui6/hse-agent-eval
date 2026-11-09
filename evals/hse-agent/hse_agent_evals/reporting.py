@@ -14,16 +14,19 @@ REVIEW_MINIMUM = 20
 
 
 def _write_atomic(path: Path, content: str) -> None:
+    """write atomic 的内部辅助逻辑。"""
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_text(content, encoding="utf-8", newline="\n")
     os.replace(temp, path)
 
 
 def _dump(payload: Any) -> str:
+    """dump 的内部辅助逻辑。"""
     return json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
 
 
 def _stable_jsonl(rows: Sequence[Mapping[str, Any]]) -> str:
+    """stable jsonl 的内部辅助逻辑。"""
     return "".join(
         json.dumps(dict(row), ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
         for row in rows
@@ -60,6 +63,7 @@ def select_review_sample(
     outcomes = [row for row in scores if row.get("label") == "task_outcome"]
 
     def _order(row: Mapping[str, Any]) -> tuple[str, int]:
+        """order 的内部辅助逻辑。"""
         try:
             repetition = int(row.get("repetition", 0))
         except (TypeError, ValueError):
@@ -109,6 +113,7 @@ def write_artifacts(
     dataset_checksums: Mapping[str, str] | None = None,
     mode: str = "baseline",
 ) -> dict[str, Path]:
+    """处理 write artifacts 相关逻辑。"""
     target = Path(run_dir)
     target.mkdir(parents=True, exist_ok=True)
     metrics = aggregate(runs, scores, plan=plan, settings=settings)
@@ -154,6 +159,7 @@ def write_artifacts(
 def render_report(
     manifest: Mapping[str, Any], metrics: Mapping[str, Any], failures: Sequence[Mapping[str, Any]]
 ) -> str:
+    """处理 render report 相关逻辑。"""
     rounds = metrics.get("rounds", {})
     cost = metrics.get("costCny", {})
     lines = [

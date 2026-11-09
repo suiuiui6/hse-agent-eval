@@ -9,6 +9,7 @@ from _factories import make_case, make_response
 
 
 def _run(case, repetition):
+    """run 的内部辅助逻辑。"""
     return build_run_record(
         run_id="run-001",
         case=case,
@@ -28,6 +29,7 @@ def _run(case, repetition):
 
 
 def test_write_artifacts_emits_all_expected_files(tmp_path):
+    """验证 write artifacts emits all expected files 场景。"""
     cases = [make_case(id=f"hse-l1-search-{index:03d}") for index in range(1, 26)]
     runs = [_run(case, repetition) for case in cases for repetition in (1, 2)]
     scores = [

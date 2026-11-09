@@ -31,6 +31,7 @@ def prepare(
     runtime_dir: str | Path = RUNTIME_DIR,
     created_time: datetime | None = None,
 ) -> dict[str, Any]:
+    """处理 prepare 相关逻辑。"""
     state_path = _runtime_path(run_id, runtime_dir)
     if state_path.exists():
         raise FileExistsError(f"运行状态已存在: {state_path}")
@@ -77,6 +78,7 @@ def seed(
     fixture_manager: FixtureManager,
     runtime_dir: str | Path = RUNTIME_DIR,
 ) -> None:
+    """处理 seed 相关逻辑。"""
     state = _load_state(run_id, runtime_dir)
     fixture_manager.execute_script(
         state["database_name"],
@@ -89,6 +91,7 @@ def reset_case(
     fixture_manager: FixtureManager,
     runtime_dir: str | Path = RUNTIME_DIR,
 ) -> None:
+    """处理 reset case 相关逻辑。"""
     state = _load_state(run_id, runtime_dir)
     database_name = state["database_name"]
     fixture_manager.execute_script(database_name, RESET_MUTABLE_PATH)
@@ -100,6 +103,7 @@ def snapshot(
     fixture_manager: FixtureManager,
     runtime_dir: str | Path = RUNTIME_DIR,
 ) -> dict[str, list[dict[str, Any]]]:
+    """处理 snapshot 相关逻辑。"""
     state = _load_state(run_id, runtime_dir)
     return fixture_manager.snapshot(state["database_name"])
 
@@ -129,6 +133,7 @@ def cleanup(
     fixture_manager: FixtureManager,
     runtime_dir: str | Path = RUNTIME_DIR,
 ) -> None:
+    """处理 cleanup 相关逻辑。"""
     state_path = _runtime_path(run_id, runtime_dir)
     state = _read_state(state_path)
     fixture_manager.drop_database(state["database_name"])
@@ -136,6 +141,7 @@ def cleanup(
 
 
 def _runtime_path(run_id: str, runtime_dir: str | Path) -> Path:
+    """runtime path 的内部辅助逻辑。"""
     if not isinstance(run_id, str) or RUN_ID_PATTERN.fullmatch(run_id) is None:
         raise ValueError(f"运行标识不安全: {run_id}")
     return Path(runtime_dir) / f"{run_id}.json"
@@ -145,10 +151,12 @@ def _load_state(
     run_id: str,
     runtime_dir: str | Path,
 ) -> dict[str, Any]:
+    """load state 的内部辅助逻辑。"""
     return _read_state(_runtime_path(run_id, runtime_dir))
 
 
 def _read_state(state_path: Path) -> dict[str, Any]:
+    """read state 的内部辅助逻辑。"""
     state = json.loads(state_path.read_text(encoding="utf-8"))
     if not isinstance(state, dict):
         raise ValueError("评测运行状态格式无效")
@@ -159,6 +167,7 @@ def _read_state(state_path: Path) -> dict[str, Any]:
 
 
 def _url_port(url: str) -> int:
+    """url port 的内部辅助逻辑。"""
     parsed = urlparse(url)
     if parsed.port is not None:
         return parsed.port
@@ -169,6 +178,7 @@ def fixture_manager(settings: EvalSettings) -> FixtureManager:
     """构建夹具管理器；与 runner 编排共用同一入口，避免连接参数实现分叉。"""
 
     def connection_factory(**kwargs: Any) -> Any:
+        """处理 connection factory 相关逻辑。"""
         return pymysql.connect(
             host=settings.mysql_host,
             port=settings.mysql_port,
@@ -184,6 +194,7 @@ def fixture_manager(settings: EvalSettings) -> FixtureManager:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """处理 main 相关逻辑。"""
     parser = argparse.ArgumentParser(prog="hse-agent-environment")
     parser.add_argument(
         "command",

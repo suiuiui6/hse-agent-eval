@@ -6,6 +6,7 @@ from hse_agent_evals.adapters.trajectory import map_tool_calls
 
 
 def test_prefers_database_tool_calls_and_parses_json_arguments():
+    """验证 prefers database tool calls and parses json arguments 场景。"""
     mapped = map_tool_calls(
         database_log={
             "tool_calls": json.dumps(
@@ -43,6 +44,7 @@ def test_prefers_database_tool_calls_and_parses_json_arguments():
 
 
 def test_falls_back_to_response_and_marks_missing_round_incomplete():
+    """验证 falls back to response and marks missing round incomplete 场景。"""
     mapped = map_tool_calls(
         database_log=None,
         response={
@@ -59,6 +61,7 @@ def test_falls_back_to_response_and_marks_missing_round_incomplete():
 
 
 def test_malformed_database_log_uses_response_without_hiding_incompleteness():
+    """验证 malformed database log uses response without hiding incompleteness 场景。"""
     mapped = map_tool_calls(
         database_log={"tool_calls": "not-json"},
         response={
@@ -80,6 +83,7 @@ def test_malformed_database_log_uses_response_without_hiding_incompleteness():
 
 
 def test_malformed_arguments_are_controlled_and_marked_incomplete():
+    """验证 malformed arguments are controlled and marked incomplete 场景。"""
     mapped = map_tool_calls(
         database_log={
             "tool_calls": [
@@ -113,6 +117,7 @@ def test_malformed_arguments_are_controlled_and_marked_incomplete():
 
 
 def test_partially_invalid_database_top_level_list_falls_back_to_complete_response():
+    """验证 partially invalid database top level list falls back to complete response 场景。"""
     mapped = map_tool_calls(
         database_log=[
             {
@@ -152,6 +157,7 @@ def test_partially_invalid_database_top_level_list_falls_back_to_complete_respon
 
 
 def test_non_list_sources_are_controlled_as_empty_incomplete_trajectory():
+    """验证 non list sources are controlled as empty incomplete trajectory 场景。"""
     mapped = map_tool_calls(
         database_log={"tool_calls": {"tool": "not-a-list"}},
         response={"toolCalls": "not-a-list"},
@@ -176,6 +182,7 @@ def test_non_list_sources_are_controlled_as_empty_incomplete_trajectory():
 def test_unified_tool_envelope_retains_status_and_metadata(
     status, ok, data, error, expected_code
 ):
+    """验证 unified tool envelope retains status and metadata 场景。"""
     mapped = map_tool_calls(
         database_log=None,
         response={
@@ -217,6 +224,7 @@ def test_unified_tool_envelope_retains_status_and_metadata(
 
 
 def test_unified_tool_envelope_retains_result_ref_from_projected_data():
+    """验证 unified tool envelope retains result ref from projected data 场景。"""
     mapped = map_tool_calls(
         database_log=None,
         response={

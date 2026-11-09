@@ -7,6 +7,7 @@ from hse_agent_evals.settings import EvalSettings
 
 
 def make_settings(**overrides: Any) -> EvalSettings:
+    """处理 make settings 相关逻辑。"""
     data: dict[str, Any] = {
         "engine_base_url": "http://127.0.0.1:18081",
         "model_proxy_url": "http://127.0.0.1:11435/v1",
@@ -20,6 +21,7 @@ def make_settings(**overrides: Any) -> EvalSettings:
 
 
 def make_case(**overrides: Any) -> EvalCase:
+    """处理 make case 相关逻辑。"""
     data: dict[str, Any] = {
         "id": "hse-l1-search-001",
         "datasetSplit": "development",
@@ -73,6 +75,7 @@ def make_response(**overrides: Any) -> dict[str, Any]:
 
 
 def make_confirm_response(**overrides: Any) -> dict[str, Any]:
+    """处理 make confirm response 相关逻辑。"""
     data: dict[str, Any] = {
         "ok": True,
         "status": "success",

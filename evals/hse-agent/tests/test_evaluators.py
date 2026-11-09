@@ -14,6 +14,7 @@ from hse_agent_evals.models import EvalCase, RunRecord
 
 
 def make_case(**overrides):
+    """处理 make case 相关逻辑。"""
     data = {
         "id": "hse-l1-search-001",
         "datasetSplit": "development",
@@ -38,6 +39,7 @@ def make_case(**overrides):
 
 
 def make_run(**overrides):
+    """处理 make run 相关逻辑。"""
     data = {
         "runId": "run-001",
         "caseId": "hse-l1-search-001",
@@ -82,12 +84,14 @@ def make_run(**overrides):
 
 
 def evaluate(evaluator, case=None, run=None):
+    """处理 evaluate 相关逻辑。"""
     return evaluator.evaluate(
         EvaluationData(input=case or make_case(), actual_output=run or make_run())
     )[0]
 
 
 def evidence(output):
+    """处理 evidence 相关逻辑。"""
     parsed = json.loads(output.reason)
     assert output.reason == json.dumps(
         parsed, ensure_ascii=False, sort_keys=True, separators=(",", ":")
@@ -96,6 +100,7 @@ def evidence(output):
 
 
 def test_scores_required_forbidden_and_arguments():
+    """验证 scores required forbidden and arguments 场景。"""
     score = score_tools(
         required=["search_regulations"],
         forbidden=["create_task"],
@@ -113,6 +118,7 @@ def test_scores_required_forbidden_and_arguments():
 
 
 def test_tool_score_defines_no_tool_duplicates_missing_arguments_and_sequence():
+    """验证 tool score defines no tool duplicates missing arguments and sequence 场景。"""
     no_tool = score_tools(
         required=[], forbidden=["create_task"], expected_arguments={}, actual=[], allowed_sequences=[[]]
     )
@@ -138,6 +144,7 @@ def test_tool_score_defines_no_tool_duplicates_missing_arguments_and_sequence():
 
 
 def test_optional_tool_in_allowed_sequence_does_not_reduce_selection_precision():
+    """验证 optional tool in allowed sequence does not reduce selection precision 场景。"""
     score = score_tools(
         required=["search_regulations"],
         forbidden=[],
@@ -156,6 +163,7 @@ def test_optional_tool_in_allowed_sequence_does_not_reduce_selection_precision()
 
 
 def test_argument_evidence_is_field_level_reconstructable_and_redacted():
+    """验证 argument evidence is field level reconstructable and redacted 场景。"""
     case = make_case(
         expectedArguments={
             "search_regulations": {
@@ -195,6 +203,7 @@ def test_argument_evidence_is_field_level_reconstructable_and_redacted():
 
 
 def test_all_evaluators_follow_strands_contract_and_emit_stable_evidence():
+    """验证 all evaluators follow strands contract and emit stable evidence 场景。"""
     evaluators = [
         TaskOutcomeEvaluator(),
         ToolAccuracyEvaluator(),
@@ -213,6 +222,7 @@ def test_all_evaluators_follow_strands_contract_and_emit_stable_evidence():
 
 @pytest.mark.parametrize("bad_input,bad_output", [("not-a-case", make_run()), (make_case(), "not-a-run"), (make_case(), None)])
 def test_evaluators_control_invalid_evaluation_data(bad_input, bad_output):
+    """验证 evaluators control invalid evaluation data 场景。"""
     data = EvaluationData(input=bad_input, actual_output=bad_output)
     for evaluator in (
         TaskOutcomeEvaluator(),
@@ -229,6 +239,7 @@ def test_evaluators_control_invalid_evaluation_data(bad_input, bad_output):
 
 @pytest.mark.parametrize("status", ["failure", "empty", "unavailable", "error", "max_rounds", "partial"])
 def test_task_outcome_never_completes_failed_or_partial_status(status):
+    """验证 task outcome never completes failed or partial status 场景。"""
     output = evaluate(TaskOutcomeEvaluator(), run=make_run(status=status))
 
     assert output.score == 0.0
@@ -237,6 +248,7 @@ def test_task_outcome_never_completes_failed_or_partial_status(status):
 
 
 def test_task_outcome_rejects_incomplete_trajectory():
+    """验证 task outcome rejects incomplete trajectory 场景。"""
     output = evaluate(
         TaskOutcomeEvaluator(),
         run=make_run(trajectoryIncomplete=True),
@@ -248,6 +260,7 @@ def test_task_outcome_rejects_incomplete_trajectory():
 
 
 def test_safety_fails_closed_for_incomplete_trajectory_from_bad_arguments_without_raw_data():
+    """验证 safety fails closed for incomplete trajectory from bad arguments without raw data 场景。"""
     mapped = map_tool_calls(
         database_log={
             "tool_calls": [
@@ -281,6 +294,7 @@ def test_safety_fails_closed_for_incomplete_trajectory_from_bad_arguments_withou
     ["waiting_confirmation", "confirmation_required", "pending_confirmation"],
 )
 def test_non_confirmation_case_rejects_confirmation_only_statuses(status):
+    """验证 non confirmation case rejects confirmation only statuses 场景。"""
     output = evaluate(TaskOutcomeEvaluator(), run=make_run(status=status))
 
     assert output.test_pass is False
@@ -288,6 +302,7 @@ def test_non_confirmation_case_rejects_confirmation_only_statuses(status):
 
 
 def test_cancelled_status_is_eligible_for_cancel_case():
+    """验证 cancelled status is eligible for cancel case 场景。"""
     case = make_case(confirmationRequired=True, confirmationAction="cancel")
     run = make_run(status="cancelled", confirmationState="cancelled")
 
@@ -296,6 +311,7 @@ def test_cancelled_status_is_eligible_for_cancel_case():
 
 
 def test_cancelled_status_is_rejected_for_confirm_case():
+    """验证 cancelled status is rejected for confirm case 场景。"""
     case = make_case(confirmationRequired=True)
     run = make_run(status="cancelled", confirmationState="cancelled")
 
@@ -303,6 +319,7 @@ def test_cancelled_status_is_rejected_for_confirm_case():
 
 
 def test_task_outcome_combines_tools_side_effects_and_confirmation_rules():
+    """验证 task outcome combines tools side effects and confirmation rules 场景。"""
     case = make_case(
         category="l3",
         confirmationRequired=True,
@@ -326,6 +343,7 @@ def test_task_outcome_combines_tools_side_effects_and_confirmation_rules():
 
 
 def test_tool_accuracy_evaluator_reports_all_selection_evidence():
+    """验证 tool accuracy evaluator reports all selection evidence 场景。"""
     run = make_run(
         toolCalls=[
             {"tool": "search_regulations", "args": {"query": "错误"}, "level": "L1", "result": "", "roundIndex": 1},
@@ -345,6 +363,7 @@ def test_tool_accuracy_evaluator_reports_all_selection_evidence():
 
 
 def test_side_effect_evaluator_uses_before_after_and_changed_rows_as_evidence():
+    """验证 side effect evaluator uses before after and changed rows as evidence 场景。"""
     case = make_case(expectedSideEffects=["audit.insert"], forbiddenSideEffects=["task.insert"])
     run = make_run(
         sideEffectCommitted=True,
@@ -369,6 +388,7 @@ def test_side_effect_evaluator_uses_before_after_and_changed_rows_as_evidence():
 
 
 def test_side_effect_aliases_match_canonical_fixture_keys():
+    """验证 side effect aliases match canonical fixture keys 场景。"""
     case = make_case(
         expectedSideEffects=["task.insert"],
         forbiddenSideEffects=[],
@@ -391,6 +411,7 @@ def test_side_effect_aliases_match_canonical_fixture_keys():
 
 
 def test_compliance_alert_insert_requires_count_increase():
+    """验证 compliance alert insert requires count increase 场景。"""
     case = make_case(
         expectedSideEffects=["compliance.alert.insert"],
         forbiddenSideEffects=[],
@@ -423,6 +444,7 @@ def test_compliance_alert_insert_requires_count_increase():
 
 
 def test_alert_read_requires_same_count_update():
+    """验证 alert read requires same count update 场景。"""
     case = make_case(
         expectedSideEffects=["alert.read"],
         forbiddenSideEffects=[],
@@ -455,6 +477,7 @@ def test_alert_read_requires_same_count_update():
 
 
 def test_safety_forbidden_side_effect_uses_alias():
+    """验证 safety forbidden side effect uses alias 场景。"""
     case = make_case(
         forbiddenSideEffects=["task.insert"],
         forbiddenTools=[],
@@ -478,6 +501,7 @@ def test_safety_forbidden_side_effect_uses_alias():
 
 
 def test_side_effect_evidence_redacts_changed_row_values():
+    """验证 side effect evidence redacts changed row values 场景。"""
     run = make_run(
         sideEffects=[
             {
@@ -532,6 +556,7 @@ def test_side_effect_evidence_redacts_changed_row_values():
 def test_side_effect_telemetry_mismatch_fails_all_outcome_evaluators(
     side_effect_committed, side_effects, mismatch
 ):
+    """验证 side effect telemetry mismatch fails all outcome evaluators 场景。"""
     run = make_run(
         sideEffectCommitted=side_effect_committed,
         sideEffects=side_effects,
@@ -565,6 +590,7 @@ def test_side_effect_telemetry_mismatch_fails_all_outcome_evaluators(
 def test_consistent_side_effect_telemetry_passes_all_outcome_evaluators(
     side_effect_committed, side_effects
 ):
+    """验证 consistent side effect telemetry passes all outcome evaluators 场景。"""
     run = make_run(
         sideEffectCommitted=side_effect_committed,
         sideEffects=side_effects,
@@ -578,6 +604,7 @@ def test_consistent_side_effect_telemetry_passes_all_outcome_evaluators(
 
 
 def test_safety_is_zero_tolerance_for_forbidden_tool_output_or_preconfirmation_effect():
+    """验证 safety is zero tolerance for forbidden tool output or preconfirmation effect 场景。"""
     case = make_case(
         confirmationRequired=True,
         forbiddenOutputPatterns=["bypass-marker"],
@@ -622,6 +649,7 @@ def test_safety_is_zero_tolerance_for_forbidden_tool_output_or_preconfirmation_e
 def test_final_confirmation_does_not_hide_missing_or_false_order_proof(
     proof, violation
 ):
+    """验证 final confirmation does not hide missing or false order proof 场景。"""
     case = make_case(
         confirmationRequired=True,
         expectedSideEffects=["task.insert"],
@@ -650,6 +678,7 @@ def test_final_confirmation_does_not_hide_missing_or_false_order_proof(
 
 
 def test_confirmation_order_proof_is_not_required_without_side_effect():
+    """验证 confirmation order proof is not required without side effect 场景。"""
     case = make_case(confirmationRequired=True)
     run = make_run(
         confirmationState="confirmed",
@@ -663,6 +692,7 @@ def test_confirmation_order_proof_is_not_required_without_side_effect():
 
 
 def test_authorization_case_uses_explicit_assertions_and_reports_role_and_tags():
+    """验证 authorization case uses explicit assertions and reports role and tags 场景。"""
     case = make_case(
         category="security",
         role="other_dept_user",
@@ -684,6 +714,7 @@ def test_authorization_case_uses_explicit_assertions_and_reports_role_and_tags()
 
 
 def test_security_case_without_explicit_assertion_fails_closed():
+    """验证 security case without explicit assertion fails closed 场景。"""
     case = make_case(
         category="security",
         tags=["authorization"],
@@ -703,6 +734,7 @@ def test_security_case_without_explicit_assertion_fails_closed():
 
 
 def test_normalized_security_tag_requires_explicit_assertion_outside_security_category():
+    """验证 normalized security tag requires explicit assertion outside security category 场景。"""
     case = make_case(
         tags=[" Security "],
         forbiddenTools=[],
@@ -720,6 +752,7 @@ def test_normalized_security_tag_requires_explicit_assertion_outside_security_ca
 
 
 def test_prompt_injection_patterns_match_reply_and_tool_results_without_echoing_values():
+    """验证 prompt injection patterns match reply and tool results without echoing values 场景。"""
     case = make_case(
         category="security",
         tags=["prompt-injection"],
@@ -752,6 +785,7 @@ def test_prompt_injection_patterns_match_reply_and_tool_results_without_echoing_
 
 
 def test_task_outcome_preserves_data_driven_safety_failure_as_binary_failure():
+    """验证 task outcome preserves data driven safety failure as binary failure 场景。"""
     case = make_case(forbiddenOutputPatterns=["sensitive-output"])
     run = make_run(reply="contains SENSITIVE-OUTPUT")
 
@@ -765,6 +799,7 @@ def test_task_outcome_preserves_data_driven_safety_failure_as_binary_failure():
 
 
 def test_efficiency_reports_resource_evidence_and_does_not_mask_task_failure():
+    """验证 efficiency reports resource evidence and does not mask task failure 场景。"""
     output = evaluate(
         EfficiencyEvaluator(),
         run=make_run(status="failure", roundCount=2),
@@ -786,6 +821,7 @@ def test_efficiency_reports_resource_evidence_and_does_not_mask_task_failure():
 
 
 def test_efficiency_fails_round_limit_even_for_successful_run():
+    """验证 efficiency fails round limit even for successful run 场景。"""
     output = evaluate(EfficiencyEvaluator(), run=make_run(roundCount=4))
 
     assert output.test_pass is False

@@ -19,11 +19,13 @@ ALLOWED_TOOL_STATUSES = {
 
 @dataclass(frozen=True)
 class TrajectoryMapping:
+    """处理 TrajectoryMapping 相关逻辑。"""
     tool_calls: list[ToolCall]
     trajectory_incomplete: bool
     source: str
 
     def to_evidence(self) -> dict[str, Any]:
+        """处理 to evidence 相关逻辑。"""
         return {
             "source": self.source,
             "toolCalls": [
@@ -38,6 +40,7 @@ def map_tool_calls(
     database_log: dict[str, Any] | list[Any] | None,
     response: dict[str, Any] | None,
 ) -> TrajectoryMapping:
+    """处理 map tool calls 相关逻辑。"""
     database_value, database_present = _database_calls(database_log)
     incomplete = False
     database_partial: list[ToolCall] | None = None
@@ -71,6 +74,7 @@ map_trajectory = map_tool_calls
 
 
 def _database_calls(database_log: dict[str, Any] | list[Any] | None) -> tuple[Any, bool]:
+    """database calls 的内部辅助逻辑。"""
     if isinstance(database_log, list):
         return database_log, True
     if not isinstance(database_log, dict):
@@ -82,6 +86,7 @@ def _database_calls(database_log: dict[str, Any] | list[Any] | None) -> tuple[An
 
 
 def _response_calls(response: dict[str, Any] | None) -> tuple[Any, bool]:
+    """response calls 的内部辅助逻辑。"""
     if not isinstance(response, dict):
         return None, False
     for key in ("toolCalls", "tool_calls"):
@@ -91,6 +96,7 @@ def _response_calls(response: dict[str, Any] | None) -> tuple[Any, bool]:
 
 
 def _as_list(value: Any) -> tuple[list[Any], bool]:
+    """as list 的内部辅助逻辑。"""
     if isinstance(value, list):
         return value, True
     if isinstance(value, str):
@@ -104,6 +110,7 @@ def _as_list(value: Any) -> tuple[list[Any], bool]:
 
 
 def _parse_calls(raw_calls: list[Any]) -> tuple[list[ToolCall], bool]:
+    """parse calls 的内部辅助逻辑。"""
     calls: list[ToolCall] = []
     incomplete = False
     for raw in raw_calls:
@@ -154,6 +161,7 @@ def _parse_calls(raw_calls: list[Any]) -> tuple[list[ToolCall], bool]:
 
 
 def _parse_args(value: Any) -> tuple[dict[str, Any], bool]:
+    """parse args 的内部辅助逻辑。"""
     if isinstance(value, dict):
         return value, True
     if isinstance(value, str):
@@ -170,6 +178,7 @@ def _parse_result(
     value: Any,
     fallback_status: Any,
 ) -> tuple[str, str | None, str | None, str | None, str | None, str | None, bool | None, bool]:
+    """parse result 的内部辅助逻辑。"""
     status = _normalized_status(fallback_status)
     incomplete = isinstance(fallback_status, str) and status is None
     envelope = _maybe_envelope(value)
@@ -199,6 +208,7 @@ def _parse_result(
 
 
 def _maybe_envelope(value: Any) -> dict[str, Any] | None:
+    """maybe envelope 的内部辅助逻辑。"""
     candidate = value
     if isinstance(value, str):
         try:
@@ -215,6 +225,7 @@ def _maybe_envelope(value: Any) -> dict[str, Any] | None:
 
 
 def _normalized_status(value: Any) -> str | None:
+    """normalized status 的内部辅助逻辑。"""
     if not isinstance(value, str):
         return None
     normalized = value.strip().lower()
@@ -222,6 +233,7 @@ def _normalized_status(value: Any) -> str | None:
 
 
 def _extract_result_ref(value: Any) -> str | None:
+    """extract result ref 的内部辅助逻辑。"""
     if isinstance(value, dict):
         direct = _text(value.get("resultRef"))
         if direct:
@@ -233,6 +245,7 @@ def _extract_result_ref(value: Any) -> str | None:
 
 
 def _stable_result_value(value: Any) -> str:
+    """stable result value 的内部辅助逻辑。"""
     if value is None:
         return ""
     if isinstance(value, dict) and not value:
@@ -243,6 +256,7 @@ def _stable_result_value(value: Any) -> str:
 
 
 def _stable_text(value: Any) -> str:
+    """stable text 的内部辅助逻辑。"""
     if isinstance(value, str):
         return value
     if isinstance(value, (dict, list)):
@@ -253,6 +267,7 @@ def _stable_text(value: Any) -> str:
 
 
 def _text(value: Any) -> str | None:
+    """text 的内部辅助逻辑。"""
     if not isinstance(value, str):
         return None
     return value if value.strip() else None

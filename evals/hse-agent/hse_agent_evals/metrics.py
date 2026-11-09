@@ -37,6 +37,7 @@ def cost_cny(*, model_duration_ms: int, gpu_hourly_cost_cny: float | None) -> fl
 
 
 def _stat_block(values: Sequence[float]) -> dict[str, float | None]:
+    """stat block 的内部辅助逻辑。"""
     if not values:
         return {"mean": None, "p50": None, "p95": None}
     return {

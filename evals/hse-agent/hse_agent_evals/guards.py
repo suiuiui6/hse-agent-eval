@@ -27,6 +27,7 @@ from hse_agent_evals.adapters.fixture_manager import DATABASE_PREFIX, FixtureMan
 
 
 def _url_port(url: str) -> int:
+    """url port 的内部辅助逻辑。"""
     parsed = urlparse(url)
     if parsed.port is not None:
         return parsed.port
@@ -46,11 +47,13 @@ class BackendBindingGuard:
         settings: Any,
         environ: Mapping[str, str] | None = None,
     ) -> None:
+        """初始化实例。"""
         self.state = dict(state)
         self.settings = settings
         self.environ = dict(environ if environ is not None else {})
 
     def validate(self, run_id: str) -> None:
+        """处理 validate 相关逻辑。"""
         database_name = self.state.get("database_name")
         jdbc_url = self.state.get("jdbc_url")
         ports = self.state.get("ports")
@@ -110,6 +113,7 @@ class MySqlIntegrityGuard:
     }
 
     def __init__(self, fixture_manager: FixtureManager, database_name: str) -> None:
+        """初始化实例。"""
         if not database_name.startswith(DATABASE_PREFIX):
             raise ValueError("完整性检查拒绝非评测数据库")
         self.fixture_manager = fixture_manager

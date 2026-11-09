@@ -15,7 +15,9 @@ from hse_agent_evals.models import EvalCase, RunRecord
 
 
 class EfficiencyEvaluator(Evaluator[EvalCase, RunRecord]):
+    """处理 EfficiencyEvaluator 相关逻辑。"""
     def evaluate(self, evaluation_case: EvaluationData) -> list[EvaluationOutput]:
+        """处理 evaluate 相关逻辑。"""
         inputs = evaluation_inputs(evaluation_case)
         if inputs is None:
             return invalid_evaluation_output("efficiency")
@@ -44,6 +46,7 @@ def efficiency_evidence(
     rounds_within_limit: bool | None = None,
     task_status_eligible: bool | None = None,
 ) -> dict[str, Any]:
+    """处理 efficiency evidence 相关逻辑。"""
     if rounds_within_limit is None:
         rounds_within_limit = run.round_count <= case.max_rounds
     if task_status_eligible is None:

@@ -1,4 +1,4 @@
-﻿import json
+import json
 from pathlib import Path
 
 from hse_agent_evals.dataset import (
@@ -13,6 +13,7 @@ CASES_DIR = Path(__file__).resolve().parents[1] / "cases"
 
 
 def _mentioned_tools(case):
+    """mentioned tools 的内部辅助逻辑。"""
     tools = set(case.required_tools) | set(case.forbidden_tools) | set(case.expected_arguments)
     for sequence in case.allowed_tool_sequences:
         tools.update(sequence)
@@ -20,6 +21,7 @@ def _mentioned_tools(case):
 
 
 def test_validate_production_bundle_accepts_approved_dataset_after_review(tmp_path):
+    """验证 validate production bundle accepts approved dataset after review 场景。"""
     development_path = CASES_DIR / "development.v1.jsonl"
     regression_path = CASES_DIR / "regression.v1.jsonl"
     manifest = json.loads((CASES_DIR / "manifest.v1.json").read_text(encoding="utf-8-sig"))
@@ -53,6 +55,7 @@ def test_validate_production_bundle_accepts_approved_dataset_after_review(tmp_pa
     ) == []
 
 def test_production_dataset_matches_task12_contract():
+    """验证 production dataset matches task12 contract 场景。"""
     development_path = CASES_DIR / "development.v1.jsonl"
     regression_path = CASES_DIR / "regression.v1.jsonl"
     manifest_path = CASES_DIR / "manifest.v1.json"
@@ -96,6 +99,7 @@ def test_production_dataset_matches_task12_contract():
 
 
 def test_modified_security_and_cancel_cases_have_explicit_assertions():
+    """验证 modified security and cancel cases have explicit assertions 场景。"""
     cases = {
         case.id: case
         for case in load_cases(CASES_DIR / "development.v1.jsonl")

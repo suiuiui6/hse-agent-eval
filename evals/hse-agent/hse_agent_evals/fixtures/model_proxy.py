@@ -22,6 +22,7 @@ VALID_MODES = {
 
 
 class _NoRedirectHandler(HTTPRedirectHandler):
+    """NoRedirectHandler 的内部辅助逻辑。"""
     def redirect_request(
         self,
         req: Any,
@@ -31,10 +32,12 @@ class _NoRedirectHandler(HTTPRedirectHandler):
         headers: Any,
         newurl: str,
     ) -> None:
+        """处理 redirect request 相关逻辑。"""
         return None
 
 
 def _build_direct_upstream_opener() -> Callable[..., Any]:
+    """build direct upstream opener 的内部辅助逻辑。"""
     return build_opener(ProxyHandler({}), _NoRedirectHandler()).open
 
 
@@ -42,6 +45,7 @@ _DEFAULT_UPSTREAM_OPENER = _build_direct_upstream_opener()
 
 
 class ModelProxyServer:
+    """处理 ModelProxyServer 相关逻辑。"""
     def __init__(
         self,
         host: str = "127.0.0.1",
@@ -51,6 +55,7 @@ class ModelProxyServer:
         upstream_timeout_seconds: float = 90.0,
         accepted_socket_timeout_seconds: float = 0.5,
     ) -> None:
+        """初始化实例。"""
         _require_loopback_host(host)
         _require_loopback_upstream(upstream_url)
         if not 0 <= port <= 65535:
@@ -73,23 +78,27 @@ class ModelProxyServer:
 
     @property
     def is_running(self) -> bool:
+        """处理 is running 相关逻辑。"""
         thread = self._thread
         return self._http_server is not None and thread is not None and thread.is_alive()
 
     @property
     def base_url(self) -> str:
+        """处理 base url 相关逻辑。"""
         server = self._http_server
         if server is None:
             raise RuntimeError("模型代理尚未启动")
         return f"http://{self.host}:{server.server_address[1]}/v1"
 
     def set_mode(self, mode: str) -> None:
+        """处理 set mode 相关逻辑。"""
         if mode not in VALID_MODES:
             raise ValueError(f"不支持的模型代理模式: {mode}")
         with self._mode_lock:
             self._mode = mode
 
     def start(self) -> ModelProxyServer:
+        """处理 start 相关逻辑。"""
         with self._lifecycle_lock:
             if self.is_running:
                 return self
@@ -109,6 +118,7 @@ class ModelProxyServer:
             return self
 
     def stop(self) -> None:
+        """处理 stop 相关逻辑。"""
         with self._lifecycle_lock:
             server = self._http_server
             thread = self._thread
@@ -124,31 +134,39 @@ class ModelProxyServer:
             self._thread = None
 
     def __enter__(self) -> ModelProxyServer:
+        """处理   enter   相关逻辑。"""
         return self.start()
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """处理   exit   相关逻辑。"""
         self.stop()
 
     def _current_mode(self) -> str:
+        """current mode 的内部辅助逻辑。"""
         with self._mode_lock:
             return self._mode
 
     def _handler_type(self) -> type[BaseHTTPRequestHandler]:
+        """handler type 的内部辅助逻辑。"""
         owner = self
 
         class Handler(BaseHTTPRequestHandler):
+            """处理 Handler 相关逻辑。"""
             protocol_version = "HTTP/1.1"
 
             def setup(self) -> None:
+                """处理 setup 相关逻辑。"""
                 super().setup()
                 self.connection.settimeout(owner.accepted_socket_timeout_seconds)
 
             def __getattr__(self, name: str) -> Any:
+                """处理   getattr   相关逻辑。"""
                 if name.startswith("do_"):
                     return self._method_not_allowed
                 raise AttributeError(name)
 
             def _discard_request_body(self) -> None:
+                """discard request body 的内部辅助逻辑。"""
                 try:
                     content_length = int(self.headers.get("Content-Length", "0"))
                 except ValueError:
@@ -160,6 +178,7 @@ class ModelProxyServer:
                         return
 
             def _method_not_allowed(self) -> None:
+                """method not allowed 的内部辅助逻辑。"""
                 self._discard_request_body()
                 path = urlsplit(self.path).path
                 if path == "/v1/chat/completions":
@@ -168,6 +187,7 @@ class ModelProxyServer:
                     self._send_json(404, {"error": "not_found"})
 
             def do_GET(self) -> None:
+                """处理 do GET 相关逻辑。"""
                 path = urlsplit(self.path).path
                 if path == "/v1/chat/completions":
                     self._send_json(405, {"error": "method_not_allowed"})
@@ -175,6 +195,7 @@ class ModelProxyServer:
                     self._send_json(404, {"error": "not_found"})
 
             def do_POST(self) -> None:
+                """处理 do POST 相关逻辑。"""
                 path = urlsplit(self.path).path
                 if path != "/v1/chat/completions":
                     self._discard_request_body()
@@ -248,6 +269,7 @@ class ModelProxyServer:
                     )
 
             def _read_json(self) -> dict[str, Any] | None:
+                """read json 的内部辅助逻辑。"""
                 try:
                     content_length = int(self.headers.get("Content-Length", "0"))
                 except ValueError:
@@ -270,6 +292,7 @@ class ModelProxyServer:
                 return payload
 
             def _send_json(self, status: int, payload: dict[str, Any]) -> None:
+                """send json 的内部辅助逻辑。"""
                 self._send_bytes(
                     status,
                     json.dumps(
@@ -288,6 +311,7 @@ class ModelProxyServer:
                 content_type: str,
                 location: str | None = None,
             ) -> None:
+                """send bytes 的内部辅助逻辑。"""
                 self.send_response(status)
                 self.send_header("Content-Type", content_type)
                 if location is not None:
@@ -299,12 +323,14 @@ class ModelProxyServer:
                 self.close_connection = True
 
             def log_message(self, format: str, *args: Any) -> None:
+                """处理 log message 相关逻辑。"""
                 return
 
         return Handler
 
 
 def _failure_response(mode: str) -> tuple[int, dict[str, Any]]:
+    """failure response 的内部辅助逻辑。"""
     if mode == "model_500":
         return 500, {
             "error": {
@@ -352,10 +378,12 @@ def _failure_response(mode: str) -> tuple[int, dict[str, Any]]:
 
 
 def _empty_usage() -> dict[str, int]:
+    """empty usage 的内部辅助逻辑。"""
     return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
 
 def _require_loopback_host(host: str) -> None:
+    """require loopback host 的内部辅助逻辑。"""
     try:
         is_loopback = host.casefold() == "localhost" or ip_address(host).is_loopback
     except ValueError:
@@ -365,6 +393,7 @@ def _require_loopback_host(host: str) -> None:
 
 
 def _require_loopback_upstream(upstream_url: str) -> None:
+    """require loopback upstream 的内部辅助逻辑。"""
     parsed = urlsplit(upstream_url)
     try:
         port = parsed.port

@@ -27,6 +27,7 @@ CAPABILITIES_RESPONSE = {
 
 
 class GraphRAGFixtureServer:
+    """处理 GraphRAGFixtureServer 相关逻辑。"""
     def __init__(
         self,
         responses_path: str | Path = DEFAULT_RESPONSES_PATH,
@@ -36,6 +37,7 @@ class GraphRAGFixtureServer:
         timeout_margin_seconds: float = 1.0,
         accepted_socket_timeout_seconds: float = 0.5,
     ) -> None:
+        """初始化实例。"""
         _require_loopback_host(host)
         if not 0 <= port <= 65535:
             raise ValueError("GraphRAG fixture 端口无效")
@@ -58,23 +60,27 @@ class GraphRAGFixtureServer:
 
     @property
     def is_running(self) -> bool:
+        """处理 is running 相关逻辑。"""
         thread = self._thread
         return self._http_server is not None and thread is not None and thread.is_alive()
 
     @property
     def base_url(self) -> str:
+        """处理 base url 相关逻辑。"""
         server = self._http_server
         if server is None:
             raise RuntimeError("GraphRAG fixture 尚未启动")
         return f"http://{self.host}:{server.server_address[1]}"
 
     def set_mode(self, mode: str) -> None:
+        """处理 set mode 相关逻辑。"""
         if mode not in VALID_MODES:
             raise ValueError(f"不支持的 GraphRAG fixture 模式: {mode}")
         with self._mode_lock:
             self._mode = mode
 
     def start(self) -> GraphRAGFixtureServer:
+        """处理 start 相关逻辑。"""
         with self._lifecycle_lock:
             if self.is_running:
                 return self
@@ -94,6 +100,7 @@ class GraphRAGFixtureServer:
             return self
 
     def stop(self) -> None:
+        """处理 stop 相关逻辑。"""
         with self._lifecycle_lock:
             server = self._http_server
             thread = self._thread
@@ -110,16 +117,20 @@ class GraphRAGFixtureServer:
             self._thread = None
 
     def __enter__(self) -> GraphRAGFixtureServer:
+        """处理   enter   相关逻辑。"""
         return self.start()
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
+        """处理   exit   相关逻辑。"""
         self.stop()
 
     def _current_mode(self) -> str:
+        """current mode 的内部辅助逻辑。"""
         with self._mode_lock:
             return self._mode
 
     def _match_response(self, query: str) -> dict[str, Any]:
+        """match response 的内部辅助逻辑。"""
         normalized_query = query.casefold()
         for entry in self._responses:
             if any(keyword.casefold() in normalized_query for keyword in entry["keywords"]):
@@ -127,21 +138,26 @@ class GraphRAGFixtureServer:
         return copy.deepcopy(self._default_response)
 
     def _handler_type(self) -> type[BaseHTTPRequestHandler]:
+        """handler type 的内部辅助逻辑。"""
         owner = self
 
         class Handler(BaseHTTPRequestHandler):
+            """处理 Handler 相关逻辑。"""
             protocol_version = "HTTP/1.1"
 
             def setup(self) -> None:
+                """处理 setup 相关逻辑。"""
                 super().setup()
                 self.connection.settimeout(owner.accepted_socket_timeout_seconds)
 
             def __getattr__(self, name: str) -> Any:
+                """处理   getattr   相关逻辑。"""
                 if name.startswith("do_"):
                     return self._method_not_allowed
                 raise AttributeError(name)
 
             def _discard_request_body(self) -> None:
+                """discard request body 的内部辅助逻辑。"""
                 try:
                     content_length = int(self.headers.get("Content-Length", "0"))
                 except ValueError:
@@ -153,6 +169,7 @@ class GraphRAGFixtureServer:
                         return
 
             def _method_not_allowed(self) -> None:
+                """method not allowed 的内部辅助逻辑。"""
                 self._discard_request_body()
                 path = urlsplit(self.path).path
                 if path in {
@@ -165,6 +182,7 @@ class GraphRAGFixtureServer:
                     self._send_json(404, {"error": "not_found"})
 
             def do_GET(self) -> None:
+                """处理 do GET 相关逻辑。"""
                 path = urlsplit(self.path).path
                 if path == "/api/v1/health":
                     self._send_json(200, HEALTH_RESPONSE)
@@ -176,6 +194,7 @@ class GraphRAGFixtureServer:
                     self._send_json(404, {"error": "not_found"})
 
             def do_POST(self) -> None:
+                """处理 do POST 相关逻辑。"""
                 path = urlsplit(self.path).path
                 if path in {"/api/v1/health", "/api/v1/capabilities"}:
                     self._discard_request_body()
@@ -207,6 +226,7 @@ class GraphRAGFixtureServer:
                 self._send_json(200, owner._match_response(question.strip()))
 
             def _read_json(self) -> dict[str, Any] | None:
+                """read json 的内部辅助逻辑。"""
                 transfer_encoding = self.headers.get("Transfer-Encoding", "").casefold()
                 if "chunked" in transfer_encoding:
                     raw_payload = self._read_chunked_body()
@@ -228,6 +248,7 @@ class GraphRAGFixtureServer:
                 return payload
 
             def _read_content_length_body(self) -> bytes | None:
+                """read content length body 的内部辅助逻辑。"""
                 try:
                     content_length = int(self.headers.get("Content-Length", "0"))
                 except ValueError:
@@ -243,6 +264,7 @@ class GraphRAGFixtureServer:
                     return None
 
             def _read_chunked_body(self) -> bytes | None:
+                """read chunked body 的内部辅助逻辑。"""
                 body = bytearray()
                 try:
                     while True:
@@ -267,6 +289,7 @@ class GraphRAGFixtureServer:
                     return None
 
             def _send_json(self, status: int, payload: dict[str, Any]) -> None:
+                """send json 的内部辅助逻辑。"""
                 body = json.dumps(
                     payload,
                     ensure_ascii=False,
@@ -282,12 +305,14 @@ class GraphRAGFixtureServer:
                 self.close_connection = True
 
             def log_message(self, format: str, *args: Any) -> None:
+                """处理 log message 相关逻辑。"""
                 return
 
         return Handler
 
 
 def _require_loopback_host(host: str) -> None:
+    """require loopback host 的内部辅助逻辑。"""
     try:
         is_loopback = host.casefold() == "localhost" or ip_address(host).is_loopback
     except ValueError:
@@ -299,6 +324,7 @@ def _require_loopback_host(host: str) -> None:
 def _load_responses(
     responses_path: str | Path,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """load responses 的内部辅助逻辑。"""
     payload = json.loads(Path(responses_path).read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("GraphRAG fixture 响应文件格式无效")
@@ -315,6 +341,7 @@ def _load_responses(
 
 
 def _validate_response(response: Any) -> None:
+    """validate response 的内部辅助逻辑。"""
     if (
         not isinstance(response, dict)
         or not isinstance(response.get("answer"), str)

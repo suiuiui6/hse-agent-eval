@@ -41,6 +41,7 @@ REGRESSION_COUNTS = {
 
 
 def make_case(case_number, split, category):
+    """处理 make case 相关逻辑。"""
     return {
         "id": f"hse-{category.replace("_", "-")}-{case_number:03d}",
         "datasetSplit": split,
@@ -63,6 +64,7 @@ def make_case(case_number, split, category):
 
 
 def make_suite():
+    """处理 make suite 相关逻辑。"""
     development = []
     regression = []
     case_number = 0
@@ -78,6 +80,7 @@ def make_suite():
 
 
 def make_manifest():
+    """处理 make manifest 相关逻辑。"""
     return {
         "version": "v1",
         "dataset": {
@@ -90,6 +93,7 @@ def make_manifest():
 
 
 def write_jsonl(path, cases):
+    """处理 write jsonl 相关逻辑。"""
     path.write_text(
         "".join(json.dumps(case, ensure_ascii=False) + "\n" for case in cases),
         encoding="utf-8",
@@ -97,6 +101,7 @@ def write_jsonl(path, cases):
 
 
 def test_validate_suite_accepts_exactly_100_cases_with_required_splits_and_categories():
+    """验证 validate suite accepts exactly 100 cases with required splits and categories 场景。"""
     development, regression = make_suite()
 
     assert len(development) == 70
@@ -105,6 +110,7 @@ def test_validate_suite_accepts_exactly_100_cases_with_required_splits_and_categ
 
 
 def test_validate_suite_rejects_duplicate_ids_across_splits():
+    """验证 validate suite rejects duplicate ids across splits 场景。"""
     development, regression = make_suite()
     regression[0]["id"] = development[0]["id"]
 
@@ -114,6 +120,7 @@ def test_validate_suite_rejects_duplicate_ids_across_splits():
 
 
 def test_validate_suite_rejects_unknown_side_effect_key():
+    """验证 validate suite rejects unknown side effect key 场景。"""
     development, regression = make_suite()
     development[0]["forbiddenSideEffects"] = ["unknown.insert"]
 
@@ -123,6 +130,7 @@ def test_validate_suite_rejects_unknown_side_effect_key():
 
 
 def test_validate_suite_rejects_missing_chinese_content():
+    """验证 validate suite rejects missing chinese content 场景。"""
     development, regression = make_suite()
     development[0]["messages"] = ["hello"]
 
@@ -132,6 +140,7 @@ def test_validate_suite_rejects_missing_chinese_content():
 
 
 def test_validate_suite_rejects_duplicate_messages():
+    """验证 validate suite rejects duplicate messages 场景。"""
     development, regression = make_suite()
     development[1]["messages"] = development[0]["messages"]
 
@@ -141,6 +150,7 @@ def test_validate_suite_rejects_duplicate_messages():
 
 
 def test_validate_suite_rejects_unknown_fixture():
+    """验证 validate suite rejects unknown fixture 场景。"""
     development, regression = make_suite()
     development[0]["fixture"] = "regulations"
 
@@ -150,6 +160,7 @@ def test_validate_suite_rejects_unknown_fixture():
 
 
 def test_validate_suite_rejects_case_in_wrong_split():
+    """验证 validate suite rejects case in wrong split 场景。"""
     development, regression = make_suite()
     regression[0]["datasetSplit"] = "development"
 
@@ -159,6 +170,7 @@ def test_validate_suite_rejects_case_in_wrong_split():
 
 
 def test_validate_suite_rejects_wrong_category_count():
+    """验证 validate suite rejects wrong category count 场景。"""
     development, regression = make_suite()
     regression[0]["category"] = "l1"
 
@@ -168,6 +180,7 @@ def test_validate_suite_rejects_wrong_category_count():
 
 
 def test_validate_suite_rejects_wrong_failure_case_count():
+    """验证 validate suite rejects wrong failure case count 场景。"""
     development, regression = make_suite()
     regression[0]["category"] = "failure"
 
@@ -177,6 +190,7 @@ def test_validate_suite_rejects_wrong_failure_case_count():
 
 
 def test_load_cases_reads_jsonl_into_eval_cases(tmp_path):
+    """验证 load cases reads jsonl into eval cases 场景。"""
     development, _ = make_suite()
     path = tmp_path / "development.v1.jsonl"
     write_jsonl(path, development[:2])
@@ -188,6 +202,7 @@ def test_load_cases_reads_jsonl_into_eval_cases(tmp_path):
 
 
 def test_update_manifest_checksums_hashes_case_files_without_approving_dataset(tmp_path):
+    """验证 update manifest checksums hashes case files without approving dataset 场景。"""
     development, regression = make_suite()
     development_path = tmp_path / "development.v1.jsonl"
     regression_path = tmp_path / "regression.v1.jsonl"
@@ -206,6 +221,7 @@ def test_update_manifest_checksums_hashes_case_files_without_approving_dataset(t
     assert manifest["approved"] is False
 
 def test_rejects_underscore_id_and_invalid_manifest_checksums():
+    """验证 rejects underscore id and invalid manifest checksums 场景。"""
     development, regression = make_suite()
     development[0]["id"] = "hse-no_tool-001"
     manifest = make_manifest()
@@ -216,6 +232,7 @@ def test_rejects_underscore_id_and_invalid_manifest_checksums():
 
 
 def test_load_cases_reports_invalid_json_and_fields(tmp_path):
+    """验证 load cases reports invalid json and fields 场景。"""
     valid = make_suite()[0][0]
     path = tmp_path / "invalid.jsonl"
     path.write_text(json.dumps(valid) + "\nnot-json\n", encoding="utf-8")
@@ -224,11 +241,13 @@ def test_load_cases_reports_invalid_json_and_fields(tmp_path):
 
 
 def test_load_cases_reports_invalid_case_fields(tmp_path):
+    """验证 load cases reports invalid case fields 场景。"""
     path = tmp_path / "invalid-case.jsonl"
     path.write_text(json.dumps({"id": "bad"}) + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="第 1 行用例无效"):
         load_cases(path)
 def test_update_manifest_checksums_accepts_utf8_bom_manifest(tmp_path):
+    """验证 update manifest checksums accepts utf8 bom manifest 场景。"""
     development, regression = make_suite()
     development_path = tmp_path / "development.v1.jsonl"
     regression_path = tmp_path / "regression.v1.jsonl"
@@ -244,6 +263,7 @@ def test_update_manifest_checksums_accepts_utf8_bom_manifest(tmp_path):
 
 
 def test_load_cases_accepts_utf8_bom_on_first_line(tmp_path):
+    """验证 load cases accepts utf8 bom on first line 场景。"""
     path = tmp_path / "development.v1.jsonl"
     path.write_text(json.dumps(make_suite()[0][0]) + "\n", encoding="utf-8-sig")
     assert load_cases(path)[0].id == "hse-no-tool-001"

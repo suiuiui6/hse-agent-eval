@@ -12,6 +12,7 @@ from hse_agent_evals.models import EvalCase, RunRecord, ToolCall
 
 @dataclass(frozen=True)
 class ToolScore:
+    """处理 ToolScore 相关逻辑。"""
     precision: float
     recall: float
     argument_accuracy: float
@@ -32,6 +33,7 @@ def score_tools(
     actual: Iterable[dict[str, Any] | ToolCall],
     allowed_sequences: Iterable[Iterable[str]] | None = None,
 ) -> ToolScore:
+    """处理 score tools 相关逻辑。"""
     required_list = list(required)
     required_set = set(required_list)
     forbidden_set = set(forbidden)
@@ -108,7 +110,9 @@ def score_tools(
 
 
 class ToolAccuracyEvaluator(Evaluator[EvalCase, RunRecord]):
+    """处理 ToolAccuracyEvaluator 相关逻辑。"""
     def evaluate(self, evaluation_case: EvaluationData) -> list[EvaluationOutput]:
+        """处理 evaluate 相关逻辑。"""
         inputs = evaluation_inputs(evaluation_case)
         if inputs is None:
             return invalid_evaluation_output("tool_accuracy")
@@ -135,6 +139,7 @@ class ToolAccuracyEvaluator(Evaluator[EvalCase, RunRecord]):
 
 
 def tool_evidence(case: EvalCase, run: RunRecord, score: ToolScore) -> dict[str, Any]:
+    """处理 tool evidence 相关逻辑。"""
     return {
         "actualTools": score.actual_tools,
         "allowedSelectionTools": score.allowed_selection_tools,
@@ -155,6 +160,7 @@ def tool_evidence(case: EvalCase, run: RunRecord, score: ToolScore) -> dict[str,
 
 
 def evaluation_inputs(evaluation_case: Any) -> tuple[EvalCase, RunRecord] | None:
+    """处理 evaluation inputs 相关逻辑。"""
     if not isinstance(evaluation_case, EvaluationData):
         return None
     if not isinstance(evaluation_case.input, EvalCase):
@@ -165,6 +171,7 @@ def evaluation_inputs(evaluation_case: Any) -> tuple[EvalCase, RunRecord] | None
 
 
 def invalid_evaluation_output(label: str) -> list[EvaluationOutput]:
+    """处理 invalid evaluation output 相关逻辑。"""
     return [
         EvaluationOutput(
             score=0.0,
@@ -176,6 +183,7 @@ def invalid_evaluation_output(label: str) -> list[EvaluationOutput]:
 
 
 def stable_reason(details: dict[str, Any]) -> str:
+    """处理 stable reason 相关逻辑。"""
     return json.dumps(details, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
@@ -184,6 +192,7 @@ def status_eligible(
     confirmation_required: bool = False,
     expected_cancellation: bool = False,
 ) -> bool:
+    """处理 status eligible 相关逻辑。"""
     normalized = status.strip().lower()
     if normalized in {
         "success",
@@ -201,6 +210,7 @@ def status_eligible(
 
 
 def _call_parts(call: dict[str, Any] | ToolCall) -> tuple[str, dict[str, Any]]:
+    """call parts 的内部辅助逻辑。"""
     if isinstance(call, ToolCall):
         return call.tool, call.args
     if isinstance(call, dict):
@@ -211,6 +221,7 @@ def _call_parts(call: dict[str, Any] | ToolCall) -> tuple[str, dict[str, Any]]:
 
 
 def _leaf_values(value: dict[str, Any], prefix: tuple[str, ...] = ()) -> list[tuple[tuple[str, ...], Any]]:
+    """leaf values 的内部辅助逻辑。"""
     leaves: list[tuple[tuple[str, ...], Any]] = []
     for key in sorted(value):
         item = value[key]
@@ -223,6 +234,7 @@ def _leaf_values(value: dict[str, Any], prefix: tuple[str, ...] = ()) -> list[tu
 
 
 def _path_value(value: dict[str, Any], path: tuple[str, ...]) -> tuple[bool, Any]:
+    """path value 的内部辅助逻辑。"""
     current: Any = value
     for part in path:
         if not isinstance(current, dict) or part not in current:

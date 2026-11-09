@@ -1,8 +1,8 @@
 # 上线前检查清单
 
-- 检查日期：2026-11-08
+- 检查日期：2026-11-09
 - 检查范围：`hse-agent-eval` 受控公开子集
-- 结论：**未达上线条件**，存在中文注释、License 与依赖漏洞待办
+- 结论：**harness 的依赖与注释已收口**；服务代码仍因 License 与漏洞问题暂不发布
 
 ## 1. 前端清理与字体
 
@@ -17,9 +17,8 @@
 
 ## 3. 函数中文注释
 
-- 当前仓库 AST 扫描：578 个函数/方法，523 个缺少 docstring。
-- **未完成**。需要专项补齐中文注释，并由人工复核。
-- 当前优先入口：`demo/`、`evals/hse-agent/run.py`、`evals/hse-agent/hse_agent_evals/`。
+- AST 扫描：582 个函数/方法，0 个缺少 docstring。
+- 已补齐中文基线注释；关键入口和已有 docstring 为人工可读描述，仍需人工复核准确性。
 
 ## 4. 开源组件 License
 
@@ -28,7 +27,7 @@
 - 待人工确认：`fastapi`、`colorama`、`PyPDF2` 的元数据 License 为 `UNKNOWN`，需核对上游许可证。
 - `certifi`、`tqdm` 含 `MPL-2.0`，需保留相应 notices。
 - 其余主要为 MIT、BSD、Apache-2.0、PSF。
-- 本仓库 harness 依赖仍需在 CI 中执行 License 清单扫描。
+- 本仓库 harness 锁定依赖均为宽松许可；`certifi` 为 MPL-2.0，需保留 notices。
 
 ## 5. 漏洞扫描
 
@@ -37,7 +36,7 @@
 - GraphRAG：20 条已知漏洞，涉及 5 个包：`certifi`、`pypdf2`、`pytest`、`setuptools`、`starlette`。
 - OCR：至少 32 条已知漏洞，涉及 `pillow`、`pytest`、`python-multipart`、`starlette`。
 - 两个服务已从本仓库撤下。重新发布前必须升级依赖、重新扫描并保留报告。
-- 本仓库 harness 依赖解析失败：`pip-audit -r evals/hse-agent/requirements.txt` 报 `ResolutionImpossible`（`strands-agents-evals` / `strands-agents` / `mcp` / `pydantic` 版本冲突）。上线前必须先修复依赖锁定并复扫。
+- 本仓库 harness 依赖已锁定：`requirements.lock.txt`（Python 3.12，21 个包），`pip-audit` 复扫结果为 **No known vulnerabilities**。
 
 ## 6. 隐私与内部文件
 

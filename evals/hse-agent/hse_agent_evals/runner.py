@@ -29,12 +29,14 @@ def run_key(case_id: str, repetition: int, attempt: int) -> str:
 
 
 def _text(value: Any) -> str:
+    """text 的内部辅助逻辑。"""
     if not isinstance(value, str):
         return ""
     return value.strip()
 
 
 def _int(value: Any, fallback: int = 0) -> int:
+    """int 的内部辅助逻辑。"""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return fallback
     return int(value)
@@ -51,6 +53,7 @@ MODEL_FAILURE_MODES = frozenset(
 
 
 def _url_port(url: str) -> int:
+    """url port 的内部辅助逻辑。"""
     port = urlparse(url).port
     if port is None:
         raise ValueError(f"评测服务地址必须显式包含端口: {url}")
@@ -59,6 +62,7 @@ def _url_port(url: str) -> int:
 
 @contextmanager
 def _managed_fixtures(settings: EvalSettings):
+    """managed fixtures 的内部辅助逻辑。"""
     model_proxy = ModelProxyServer(
         port=_url_port(settings.model_proxy_url),
         upstream_url=settings.ollama_base_url.rstrip("/") + "/chat/completions",
@@ -85,6 +89,7 @@ def _apply_case_failure_mode(
     model_proxy: ModelProxyServer | None,
     graphrag_fixture: GraphRAGFixtureServer | None,
 ) -> None:
+    """apply case failure mode 的内部辅助逻辑。"""
     mode = case.failure_mode
     if mode == "none":
         if model_proxy is not None:
@@ -113,6 +118,7 @@ def _reset_fixture_modes(
     model_proxy: ModelProxyServer | None,
     graphrag_fixture: GraphRAGFixtureServer | None,
 ) -> None:
+    """reset fixture modes 的内部辅助逻辑。"""
     if model_proxy is not None:
         model_proxy.set_mode("none")
     if graphrag_fixture is not None:
@@ -248,6 +254,7 @@ class LeaseUnavailable(RuntimeError):
 
 
 def _lock_file(file_object: Any) -> None:
+    """lock file 的内部辅助逻辑。"""
     if os.name == "nt":
         import msvcrt
 
@@ -259,6 +266,7 @@ def _lock_file(file_object: Any) -> None:
 
 
 def _unlock_file(file_object: Any) -> None:
+    """unlock file 的内部辅助逻辑。"""
     if os.name == "nt":
         import msvcrt
 
@@ -277,6 +285,7 @@ class RawRunStore:
     """
 
     def __init__(self, run_dir: str | Path) -> None:
+        """初始化实例。"""
         self.run_dir = Path(run_dir)
         self.raw_dir = self.run_dir / "raw"
         self.runs_path = self.raw_dir / "runs.jsonl"
@@ -316,9 +325,11 @@ class RawRunStore:
                 lease_file.close()
 
     def existing_keys(self) -> set[str]:
+        """处理 existing keys 相关逻辑。"""
         return {run_key(record.case_id, record.repetition, record.attempt) for record in self.load()}
 
     def load(self) -> list[RunRecord]:
+        """处理 load 相关逻辑。"""
         if not self.runs_path.exists():
             return []
         records: list[RunRecord] = []
@@ -363,6 +374,7 @@ class RawRunStore:
         tmp_path.unlink()
 
     def append_scores(self, rows: Iterable[Mapping[str, Any]]) -> None:
+        """处理 append scores 相关逻辑。"""
         self.raw_dir.mkdir(parents=True, exist_ok=True)
         with self.scores_path.open("a", encoding="utf-8", newline="\n") as handle:
             for row in rows:
@@ -374,6 +386,7 @@ class RawRunStore:
             os.fsync(handle.fileno())
 
     def load_scores(self) -> list[dict[str, Any]]:
+        """处理 load scores 相关逻辑。"""
         if not self.scores_path.exists():
             return []
         rows: list[dict[str, Any]] = []
@@ -409,6 +422,7 @@ def _confirmation_request(
 ) -> tuple[str, dict[str, Any], str]:
     # 后端实际写入的键是 "tool"（HseAgentServiceImpl.java:267），前端 helpers 兼容 toolName，
     # 此处同样两者都认，避免因键名差异丢掉确认链路。
+    """confirmation request 的内部辅助逻辑。"""
     details = response.get("confirmation")
     candidates = details if isinstance(details, list) else [details]
     for candidate in candidates:
@@ -517,6 +531,7 @@ def _merge_turn_responses(
     prior: Sequence[Mapping[str, Any]],
     final: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """merge turn responses 的内部辅助逻辑。"""
     if not prior:
         return dict(final)
     merged = dict(final)
@@ -703,6 +718,7 @@ EVAL_ROOT = Path(__file__).resolve().parents[1]
 
 @dataclass(frozen=True)
 class ExecutionPlan:
+    """处理 ExecutionPlan 相关逻辑。"""
     cases: list[EvalCase]
     repetitions: int
     mode: str
@@ -712,6 +728,7 @@ class ExecutionPlan:
 
 @dataclass(frozen=True)
 class RunSummary:
+    """处理 RunSummary 相关逻辑。"""
     run_id: str
     planned_attempts: int
     executed: int
@@ -729,6 +746,7 @@ def plan_execution(
     mode: str,
     rerun_failures: bool,
 ) -> ExecutionPlan:
+    """处理 plan execution 相关逻辑。"""
     if repetitions < 1 or repetitions > 5:
         raise ValueError("重复次数必须在 1..5 之间")
     if mode not in {"baseline", "gate"}:
@@ -781,6 +799,7 @@ def verify_backend_binding(
     settings: EvalSettings,
     runtime_dir: str | Path = EVAL_ROOT / ".runtime",
 ) -> dict[str, Any]:
+    """处理 verify backend binding 相关逻辑。"""
     state = environment.run_state(run_id, runtime_dir)
     expected = _text(state.get("database_name"))
     if not expected or not expected.startswith("engine_agent_eval_"):
@@ -845,6 +864,7 @@ def run_all(
     evaluators=DEFAULT_EVALUATORS,
     manage_fixtures: bool = False,
 ) -> RunSummary:
+    """处理 run all 相关逻辑。"""
     store = RawRunStore(run_directory(runtime_dir, run_id))
     if not manage_fixtures and any(
         case.failure_mode != "none" for case in plan.cases
@@ -945,6 +965,7 @@ def run_all(
 
 
 def _client(settings: EvalSettings) -> EngineClient:
+    """client 的内部辅助逻辑。"""
     return EngineClient(base_url=settings.engine_base_url, timeout=settings.request_timeout_seconds)
 
 

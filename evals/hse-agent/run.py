@@ -29,6 +29,7 @@ CASES_DIR = EVAL_ROOT / "cases"
 RUNTIME_DIR = EVAL_ROOT / ".runtime"
 
 def _settings() -> EvalSettings:
+    """settings 的内部辅助逻辑。"""
     return EvalSettings()
 
 def _reporting_settings() -> EvalSettings | None:
@@ -43,14 +44,17 @@ def _reporting_settings() -> EvalSettings | None:
         return None
 
 def _fixture_manager(settings: EvalSettings) -> FixtureManager:
+    """fixture manager 的内部辅助逻辑。"""
     return environment.fixture_manager(settings)
 
 def _cases() -> list[Any]:
+    """cases 的内部辅助逻辑。"""
     return load_cases(CASES_DIR / "development.v1.jsonl") + load_cases(
         CASES_DIR / "regression.v1.jsonl"
     )
 
 def _dataset_approved() -> bool:
+    """dataset approved 的内部辅助逻辑。"""
     try:
         manifest = json.loads(
             (CASES_DIR / "manifest.v1.json").read_text(encoding="utf-8-sig")
@@ -74,6 +78,7 @@ def _dataset_approved() -> bool:
 def plan_from_arguments(
     *, dataset: str, repetitions: int, mode: str, rerun_failures: bool
 ) -> ExecutionPlan:
+    """处理 plan from arguments 相关逻辑。"""
     return plan_execution(
         _cases(),
         dataset=dataset,
@@ -83,9 +88,11 @@ def plan_from_arguments(
     )
 
 def _run_dir(run_id: str) -> Path:
+    """run dir 的内部辅助逻辑。"""
     return run_directory(RUNTIME_DIR, run_id)
 
 def _seed_marker(run_id: str) -> Path:
+    """seed marker 的内部辅助逻辑。"""
     return RUNTIME_DIR / f"{run_id}.seeded"
 
 def validate_command(_: argparse.Namespace) -> int:
@@ -109,6 +116,7 @@ def validate_command(_: argparse.Namespace) -> int:
     return 0
 
 def prepare_command(arguments: argparse.Namespace) -> int:
+    """处理 prepare command 相关逻辑。"""
     settings = _settings()
     manager = _fixture_manager(settings)
     result = environment.prepare(arguments.run_id, settings, manager, RUNTIME_DIR)
@@ -116,6 +124,7 @@ def prepare_command(arguments: argparse.Namespace) -> int:
     return 0
 
 def seed_command(arguments: argparse.Namespace) -> int:
+    """处理 seed command 相关逻辑。"""
     try:
         environment.database_name(arguments.run_id, RUNTIME_DIR)
     except FileNotFoundError:
@@ -137,6 +146,7 @@ def seed_command(arguments: argparse.Namespace) -> int:
     return 0
 
 def check_binding_command(arguments: argparse.Namespace) -> int:
+    """处理 check binding command 相关逻辑。"""
     try:
         environment.database_name(arguments.run_id, RUNTIME_DIR)
     except FileNotFoundError:
@@ -154,6 +164,7 @@ def execute_command(arguments: argparse.Namespace) -> int:
     # run_all 不会自动 prepare：缺状态时每条用例都会失败并被吞成
     # 「failed=N，零记录，退出码 1」，排查起来毫无线索。这里先明确报错。
     # 检查先于构造 EvalSettings：缺运行状态时不该再要求运行时密钥齐备。
+    """处理 execute command 相关逻辑。"""
     try:
         environment.database_name(arguments.run_id, RUNTIME_DIR)
     except FileNotFoundError:
@@ -194,6 +205,7 @@ def execute_command(arguments: argparse.Namespace) -> int:
     return summary.exit_code
 
 def report_command(arguments: argparse.Namespace) -> int:
+    """处理 report command 相关逻辑。"""
     settings = _reporting_settings()
     store = RawRunStore(_run_dir(arguments.run_id))
     runs = store.load()
@@ -222,6 +234,7 @@ def report_command(arguments: argparse.Namespace) -> int:
     return 0
 
 def cleanup_command(arguments: argparse.Namespace) -> int:
+    """处理 cleanup command 相关逻辑。"""
     settings = _settings()
     environment.cleanup(arguments.run_id, _fixture_manager(settings), RUNTIME_DIR)
     marker = _seed_marker(arguments.run_id)
@@ -230,6 +243,7 @@ def cleanup_command(arguments: argparse.Namespace) -> int:
     return 0
 
 def build_parser() -> argparse.ArgumentParser:
+    """处理 build parser 相关逻辑。"""
     parser = argparse.ArgumentParser(prog="hse-agent-eval")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -257,6 +271,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """处理 main 相关逻辑。"""
     arguments = build_parser().parse_args(argv)
     handlers = {
         "validate": validate_command,

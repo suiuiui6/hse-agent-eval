@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class EvalSettings(BaseSettings):
+    """处理 EvalSettings 相关逻辑。"""
     model_config = SettingsConfigDict(env_prefix="AGENT_EVAL_", extra="forbid")
 
     engine_base_url: str = "http://127.0.0.1:18081"
@@ -31,6 +32,7 @@ class EvalSettings(BaseSettings):
     )
     @classmethod
     def require_loopback_url(cls, value: str) -> str:
+        """处理 require loopback url 相关逻辑。"""
         parsed = urlparse(value)
         try:
             port = parsed.port
@@ -50,6 +52,7 @@ class EvalSettings(BaseSettings):
     @field_validator("mysql_host")
     @classmethod
     def require_loopback_mysql(cls, value: str) -> str:
+        """处理 require loopback mysql 相关逻辑。"""
         try:
             is_loopback = ip_address(value).is_loopback
         except ValueError:
@@ -61,6 +64,7 @@ class EvalSettings(BaseSettings):
     @field_validator("mysql_database_prefix")
     @classmethod
     def require_eval_prefix(cls, value: str) -> str:
+        """处理 require eval prefix 相关逻辑。"""
         if value != "engine_agent_eval_":
             raise ValueError("评测数据库前缀必须为 engine_agent_eval_")
         return value
@@ -68,6 +72,7 @@ class EvalSettings(BaseSettings):
     @field_validator("redis_database")
     @classmethod
     def require_eval_redis_db(cls, value: int) -> int:
+        """处理 require eval redis db 相关逻辑。"""
         if value != 15:
             raise ValueError("评测 Redis DB 必须为 15")
         return value

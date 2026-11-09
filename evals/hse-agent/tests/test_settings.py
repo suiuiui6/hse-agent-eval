@@ -5,6 +5,7 @@ from hse_agent_evals.settings import EvalSettings
 
 
 def test_defaults_are_isolated_and_repeat_three_times():
+    """验证 defaults are isolated and repeat three times 场景。"""
     settings = EvalSettings(mysql_admin_password="eval-secret")
     assert settings.engine_base_url == "http://127.0.0.1:18081"
     assert settings.mysql_database_prefix == "engine_agent_eval_"
@@ -23,12 +24,14 @@ def test_defaults_are_isolated_and_repeat_three_times():
     ],
 )
 def test_rejects_non_isolated_configuration(field, value):
+    """验证 rejects non isolated configuration 场景。"""
     values = {"mysql_admin_password": "eval-secret", field: value}
     with pytest.raises(ValidationError):
         EvalSettings(**values)
 
 
 def test_loopback_rejection_has_auditable_message():
+    """验证 loopback rejection has auditable message 场景。"""
     with pytest.raises(ValidationError) as exc_info:
         EvalSettings(
             mysql_admin_password="eval-secret",
@@ -39,6 +42,7 @@ def test_loopback_rejection_has_auditable_message():
 
 
 def test_rejects_extra_configuration_fields():
+    """验证 rejects extra configuration fields 场景。"""
     with pytest.raises(ValidationError) as exc_info:
         EvalSettings(mysql_admin_password="eval-secret", unsafe_override=True)
 
@@ -46,6 +50,7 @@ def test_rejects_extra_configuration_fields():
 
 
 def test_mysql_password_is_secret():
+    """验证 mysql password is secret 场景。"""
     settings = EvalSettings(mysql_admin_password="eval-secret")
 
     assert str(settings.mysql_admin_password) == "**********"
@@ -61,6 +66,7 @@ def test_mysql_password_is_secret():
     ],
 )
 def test_rejects_url_without_safe_http_endpoint(engine_base_url):
+    """验证 rejects url without safe http endpoint 场景。"""
     with pytest.raises(ValidationError):
         EvalSettings(
             mysql_admin_password="eval-secret",

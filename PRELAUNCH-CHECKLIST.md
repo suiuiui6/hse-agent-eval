@@ -37,7 +37,7 @@
 - GraphRAG：20 条已知漏洞，涉及 5 个包：`certifi`、`pypdf2`、`pytest`、`setuptools`、`starlette`。
 - OCR：至少 32 条已知漏洞，涉及 `pillow`、`pytest`、`python-multipart`、`starlette`。
 - 两个服务已从本仓库撤下。重新发布前必须升级依赖、重新扫描并保留报告。
-- 本仓库 harness 依赖仍需在 CI 中执行 `pip-audit`。
+- 本仓库 harness 依赖解析失败：`pip-audit -r evals/hse-agent/requirements.txt` 报 `ResolutionImpossible`（`strands-agents-evals` / `strands-agents` / `mcp` / `pydantic` 版本冲突）。上线前必须先修复依赖锁定并复扫。
 
 ## 6. 隐私与内部文件
 

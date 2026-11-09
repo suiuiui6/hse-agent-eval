@@ -1,0 +1,16 @@
+{
+  "engine_base_url": "http://127.0.0.1:18081",
+  "mysql_host": "127.0.0.1",
+  "mysql_port": 3306,
+  "mysql_admin_user": "root",
+  "mysql_database_prefix": "engine_agent_eval_",
+  "redis_database": 15,
+  "model_proxy_url": "http://127.0.0.1:11435/v1",
+  "ollama_base_url": "http://127.0.0.1:11434/v1",
+  "model": "qwen2.5:7b",
+  "graphrag_fixture_url": "http://127.0.0.1:18080",
+  "repetitions": 3,
+  "request_timeout_seconds": 90.0,
+  "gpu_hourly_cost_cny": null,
+  "cpu_hourly_cost_cny": null
+}

@@ -1,0 +1,59 @@
+server:
+  address: 127.0.0.1
+  port: 18081
+
+spring:
+  datasource:
+    druid:
+      master:
+        url: ${SPRING_DATASOURCE_URL}
+        username: ${SPRING_DATASOURCE_USERNAME}
+        password: ${SPRING_DATASOURCE_PASSWORD}
+      statViewServlet:
+        enabled: false
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_REDIS_PORT:6379}
+      database: 15
+      password: ${SPRING_REDIS_PASSWORD:}
+  flyway:
+    enabled: true
+    clean-disabled: true
+  devtools:
+    restart:
+      enabled: false
+
+token:
+  header: Authorization
+  secret: ${ENGINE_JWT_SECRET}
+  expireTime: 30
+
+agent:
+  api:
+    base-url: http://127.0.0.1:11435/v1
+    model: qwen2.5:7b
+
+hse:
+  regulation:
+    knowledge:
+      enabled: true
+      operations-enabled: false
+      base-url: http://127.0.0.1:18080
+
+graphrag:
+  api:
+    enabled: true
+    base-url: http://127.0.0.1:18080
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

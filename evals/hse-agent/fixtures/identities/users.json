@@ -1,0 +1,50 @@
+{
+  "system_admin": {
+    "user_id": 1,
+    "username": "admin",
+    "password": "admin123",
+    "dept_id": 103,
+    "roles": [
+      "admin"
+    ],
+    "permissions": [
+      "*:*:*"
+    ]
+  },
+  "admin": {
+    "user_id": 980000,
+    "username": "agent_eval_admin",
+    "password": "admin123",
+    "dept_id": 210,
+    "roles": [
+      "admin"
+    ],
+    "permissions": [
+      "hse:ai:query"
+    ]
+  },
+  "hse_user": {
+    "user_id": 980001,
+    "username": "hse_user",
+    "password": "admin123",
+    "dept_id": 210,
+    "roles": [
+      "hse_eval_user"
+    ],
+    "permissions": [
+      "hse:ai:query"
+    ]
+  },
+  "other_dept_user": {
+    "user_id": 980002,
+    "username": "other_dept_user",
+    "password": "admin123",
+    "dept_id": 220,
+    "roles": [
+      "hse_eval_user"
+    ],
+    "permissions": [
+      "hse:ai:query"
+    ]
+  }
+}

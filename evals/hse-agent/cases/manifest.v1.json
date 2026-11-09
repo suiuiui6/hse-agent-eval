@@ -1,0 +1,24 @@
+{
+  "version": "v1",
+  "dataset": {
+    "splits": {
+      "development": 70,
+      "regression": 30
+    },
+    "categoryCounts": {
+      "no_tool": 10,
+      "l1": 25,
+      "l2": 15,
+      "l3": 15,
+      "multi_tool": 15,
+      "boundary": 10,
+      "security": 5,
+      "failure": 5
+    }
+  },
+  "checksums": {
+    "development": "c68afaed0d21c51b9a14b01b4a93a621583151ba066b83f25fda3aed68f856c7",
+    "regression": "768a36a019963a687beb480b08db405e8c8349e7e07c43a43bc3febf88a633d2"
+  },
+  "approved": false
+}

@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "decision": "pending",
+  "reviewers": [],
+  "reviewedAt": null,
+  "reviewedChecksums": {
+    "development": "c68afaed0d21c51b9a14b01b4a93a621583151ba066b83f25fda3aed68f856c7",
+    "regression": "768a36a019963a687beb480b08db405e8c8349e7e07c43a43bc3febf88a633d2"
+  },
+  "acceptedCaseIds": [],
+  "rejectedCaseIds": [],
+  "note": "T05 重写 100 条中文 case 并加入多轮覆盖；待 T06 人工复核"
+}

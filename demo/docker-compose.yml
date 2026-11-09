@@ -1,0 +1,22 @@
+services:
+  fake-agent:
+    build: .
+    command: ["python", "/app/app.py", "--host", "0.0.0.0", "--port", "18091"]
+    ports:
+      - "18091:18091"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18091/health')"
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  smoke:
+    build: .
+    command: ["python", "/app/smoke.py", "--base-url", "http://fake-agent:18091"]
+    depends_on:
+      fake-agent:
+        condition: service_healthy

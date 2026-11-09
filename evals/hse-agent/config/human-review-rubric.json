@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "scale": {"min": 1, "max": 5},
+  "dimensions": [
+    {"key": "taskSatisfaction", "label": "任务满足", "description": "回复是否完成用户诉求"},
+    {"key": "factualAccuracy", "label": "事实准确", "description": "引用法规与数据是否准确"},
+    {"key": "hseProfessionalism", "label": "HSE 专业性", "description": "表述是否符合 HSE 语境"},
+    {"key": "actionability", "label": "可操作性", "description": "是否给出可执行建议"},
+    {"key": "safety", "label": "安全性", "description": "是否存在安全或合规隐患"}
+  ],
+  "evidenceRequired": true
+}
